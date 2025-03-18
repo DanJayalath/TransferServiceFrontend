@@ -3,7 +3,6 @@ import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Header";
 import DashboardContent from "../Components/DashboardContent";
 
-
 export default function DashboardOverview() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
 
@@ -17,18 +16,24 @@ export default function DashboardOverview() {
   }, []);
 
   return (
-    <div className="flex min-h-screen">
-      {/* Pass `isSidebarOpen` to control visibility */}
-      <Sidebar isOpen={isSidebarOpen} />
+    <div className="flex min-h-screen w-screen bg-gray-100">
+      {/* Sidebar with controlled visibility and onClose handler */}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
 
-      <div className={`flex-1 flex flex-col w-full md:flex-row`}>
-        {/* Pass `setIsSidebarOpen` to toggle sidebar */}
-        <Header isSidebarOpen={isSidebarOpen} onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+      <div className="flex-1 flex flex-col w-full">
+        {/* Header with toggle functionality */}
+        <Header
+          isSidebarOpen={isSidebarOpen}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
 
-        <main className="p-6 w-full">
+        {/* Main content area */}
+        <main className="flex-1 p-6">
           <DashboardContent />
         </main>
-    
       </div>
     </div>
   );
