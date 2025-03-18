@@ -1,10 +1,13 @@
-// routes/index.jsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; // Import Routes instead of Switch
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingLayout from '../layouts/LandingLayout';
 import DashboardLayout from '../layouts/DashboardLayout';
 import Overview from '../pages/Dashboard/Overview';
 import Home from '../pages/LandingPage/Home';
+import LocationCategories from '../pages/Dashboard/LocationCategories'; 
+import Locations from '../pages/Dashboard/Locations'; 
+import Drivers from '../pages/Dashboard/Drivers'; 
+import Analytics from '../pages/Dashboard/Analytics'; 
 
 const AppRoutes = () => {
   return (
@@ -13,20 +16,22 @@ const AppRoutes = () => {
         {/* Landing Page Routes */}
         <Route path="/" element={<LandingLayout />}>
           <Route index element={<Home />} />
-       {/*    <Route path="about-us" element={<AboutUs />} />
+          {/* <Route path="about-us" element={<AboutUs />} />
           <Route path="contact-us" element={<ContactUs />} />
           <Route path="reservation" element={<Reservation />} /> */}
-          {/* Add other landing page routes here */}
         </Route>
 
         {/* Dashboard Routes */}
         <Route path="/Dashboard" element={<DashboardLayout />}>
           <Route index element={<Overview />} />
-          {/* Add other dashboard routes here */}
+          <Route path="LocationCategories" element={<LocationCategories />} />
+          <Route path="locations" element={<Locations />} />
+          <Route path="drivers" element={<Drivers />} />
+          <Route path="analytics" element={<Analytics />} />
         </Route>
 
         {/* Default route */}
-      {/*   <Route path="*" element={<NotFoundPage />} /> */}
+        {/* <Route path="*" element={<NotFoundPage />} /> */}
       </Routes>
     </Router>
   );
