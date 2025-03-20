@@ -7,7 +7,7 @@ import Home from '../pages/LandingPage/Home';
 import LocationCategories from '../pages/Dashboard/LocationCategories'; 
 import Locations from '../pages/Dashboard/Locations'; 
 import Drivers from '../pages/Dashboard/Drivers'; 
-import Analytics from '../pages/Dashboard/Analytics'; 
+import Bookings from '../pages/Dashboard/Bookings'; 
 
 const AppRoutes = () => {
   return (
@@ -27,7 +27,7 @@ const AppRoutes = () => {
           <Route path="LocationCategories" element={<LocationCategories />} />
           <Route path="locations" element={<Locations />} />
           <Route path="drivers" element={<Drivers />} />
-          <Route path="analytics" element={<Analytics />} />
+          <Route path="Bookings" element={<Bookings />} />
         </Route>
 
         {/* Default route */}

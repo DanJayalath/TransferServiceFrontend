@@ -10,7 +10,7 @@ export default function Overview() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Customers Card */}
         <StatsCard
-          title="Customers"
+          title="Total Customers"
           value="3,782"
           percentage="+10.1%"
           icon={
@@ -29,9 +29,9 @@ export default function Overview() {
             </svg>
           }
         />
-        {/* Bookings Card */}
+        {/* Bookings Card with Year and Month */}
         <StatsCard
-          title="Bookings"
+          title="Total Bookings - March 2025"
           value="5,359"
           percentage="-5.5%"
           icon={
@@ -52,8 +52,8 @@ export default function Overview() {
         />
         {/* Revenue Card */}
         <StatsCard
-          title="Revenue"
-          value="$38,287"
+          title="New Bookings"
+          value="10"
           percentage="75.55% (Target)"
           icon={
             <svg

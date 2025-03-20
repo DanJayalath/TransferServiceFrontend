@@ -63,7 +63,7 @@ export default function Sidebar({ isOpen, onClose }) {
             </li>
             <li>
               <NavLink
-                to="/analytics"
+                to="./Bookings"
                 className={({ isActive }) =>
                   `flex items-center p-2 rounded text-sm font-bold transition-colors duration-200 text-black ${
                     isActive
@@ -88,7 +88,7 @@ export default function Sidebar({ isOpen, onClose }) {
                     />
                   </svg>
                 </span>
-                <span>Analytics</span>
+                <span>Bookings</span>
               </NavLink>
             </li>
             {/* Collapsible Settings Menu */}
