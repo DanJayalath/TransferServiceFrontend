@@ -8,6 +8,7 @@ import LocationCategories from '../pages/Dashboard/LocationCategories';
 import Locations from '../pages/Dashboard/Locations'; 
 import Drivers from '../pages/Dashboard/Drivers'; 
 import Bookings from '../pages/Dashboard/Bookings'; 
+import Messeges from '../pages/Dashboard/Messeges'; 
 
 const AppRoutes = () => {
   return (
@@ -28,6 +29,7 @@ const AppRoutes = () => {
           <Route path="locations" element={<Locations />} />
           <Route path="drivers" element={<Drivers />} />
           <Route path="Bookings" element={<Bookings />} />
+          <Route path="Messeges" element={<Messeges />} />
         </Route>
 
         {/* Default route */}

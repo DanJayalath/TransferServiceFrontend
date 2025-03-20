@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 // Import Inter font from Google Fonts (you can add this in your index.html or CSS)
 const interFontLink = (
@@ -9,8 +9,8 @@ const interFontLink = (
 );
 
 export default function Bookings() {
-  // Sample data for bookings (based on the schema)
-  const bookings = [
+  // Sample data for bookings (now mutable for updates)
+  const [bookings, setBookings] = useState([
     {
       id: 1,
       client: { name: "John Doe", email: "john.doe@example.com", phone: "123-456-7890", country: "USA" },
@@ -59,146 +59,360 @@ export default function Bookings() {
       comments: "",
       refDateAndTime: "2025-03-13 16:00:00",
     },
-  ];
+    {
+      id: 4,
+      client: { name: "Sophie Turner", email: "sophie.turner@example.com", phone: "444-555-6666", country: "France" },
+      tripType: "One-Way",
+      pickUp: "Disneyland",
+      destination: "Paris City",
+      flightDetails: { arrivalDate: "2025-03-19", arrivalTime: "11:00 AM" },
+      vehicle: { category: "Sedan", model: "Nissan Altima" },
+      driver: "Claire Evans",
+      passengers: 3,
+      children: 1,
+      price: 150.0,
+      status: "Pending to Confirm",
+      comments: "Client prefers a non-smoking vehicle.",
+      refDateAndTime: "2025-03-19 08:00:00",
+    },
+  ]);
 
-  // Get the latest booking for "New Bookings" section (sorted by refDateAndTime)
-  const latestBooking = bookings.sort((a, b) => new Date(b.refDateAndTime) - new Date(a.refDateAndTime))[0];
+  // State for selected tab, selected booking, selected customer, and editable fields
+  const [selectedTab, setSelectedTab] = useState("Confirmed");
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [editedPrice, setEditedPrice] = useState(null);
+  const [editedStatus, setEditedStatus] = useState(null);
+
+  // Filter bookings for "New Bookings" (Pending to Confirm only)
+  const newBookings = bookings
+    .filter((booking) => booking.status === "Pending to Confirm")
+    .sort((a, b) => new Date(b.refDateAndTime) - new Date(a.refDateAndTime));
+
+  // Filter bookings for "All Bookings" (Confirmed and Completed)
+  const filteredBookings = bookings
+    .filter((booking) => booking.status === selectedTab && (booking.status === "Confirmed" || booking.status === "Completed"))
+    .sort((a, b) => new Date(b.refDateAndTime) - new Date(a.refDateAndTime));
+
+  // Handle saving changes to price and status
+  const handleSaveChanges = () => {
+    if (selectedBooking) {
+      const updatedBookings = bookings.map((booking) =>
+        booking.id === selectedBooking.id
+          ? {
+              ...booking,
+              price: editedPrice !== null ? parseFloat(editedPrice) : booking.price,
+              status: editedStatus || booking.status,
+            }
+          : booking
+      );
+      setBookings(updatedBookings);
+      setSelectedBooking({
+        ...selectedBooking,
+        price: editedPrice !== null ? parseFloat(editedPrice) : selectedBooking.price,
+        status: editedStatus || selectedBooking.status,
+      });
+      setEditedPrice(null);
+      setEditedStatus(null);
+    }
+  };
 
   return (
-    <div className="mt-8 bg-white shadow-lg rounded-xl p-6 font-inter">
-      {/* Section 1: New Bookings */}
+    <div className="p-6 bg-gray-50 min-h-screen font-inter">
+      <h1 className="text-2xl font-semibold text-gray-800 mb-6">Bookings</h1>
+
+      {/* Section 1: New Bookings (Pending to Confirm only) */}
       <div className="mb-10">
         <h2 className="text-xl font-semibold text-gray-800 mb-5">New Bookings</h2>
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 shadow-sm">
-          <h3 className="text-sm font-medium text-gray-600 mb-4">Booking ID: {latestBooking.id}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Customer Details */}
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+          {newBookings.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="bg-gray-100 text-gray-700 text-sm font-medium">
+                    <th className="p-4 text-left">Booking ID</th>
+                    <th className="p-4 text-left">Customer</th>
+                    <th className="p-4 text-left">Trip Type</th>
+                    <th className="p-4 text-left">Pick-Up</th>
+                    <th className="p-4 text-left">Destination</th>
+                    <th className="p-4 text-left">Price</th>
+                    <th className="p-4 text-left">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {newBookings.map((booking) => (
+                    <tr
+                      key={booking.id}
+                      onClick={() => {
+                        setSelectedBooking(booking);
+                        setEditedPrice(booking.price); // Initialize edited price
+                        setEditedStatus(booking.status); // Initialize edited status
+                      }}
+                      className={`border-t border-gray-200 text-gray-600 text-sm cursor-pointer ${
+                        selectedBooking?.id === booking.id ? "bg-blue-50" : "hover:bg-gray-50"
+                      }`}
+                    >
+                      <td className="p-4">{booking.id}</td>
+                      <td className="p-4">
+                        <div>
+                          <p
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent row click from triggering
+                              setSelectedCustomer(booking.client);
+                            }}
+                            className="font-medium text-gray-800 hover:text-blue-600 cursor-pointer"
+                          >
+                            {booking.client.name}
+                          </p>
+                          <p className="text-xs text-gray-500">{booking.client.email}</p>
+                        </div>
+                      </td>
+                      <td className="p-4">{booking.tripType}</td>
+                      <td className="p-4">{booking.pickUp}</td>
+                      <td className="p-4">{booking.destination}</td>
+                      <td className="p-4">${booking.price.toFixed(2)}</td>
+                      <td className="p-4">
+                        <span
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700`}
+                        >
+                          {booking.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="p-6 text-gray-600 text-center">No new bookings (Pending to Confirm).</p>
+          )}
+        </div>
+      </div>
+
+      {/* Section 2: All Bookings with Tabs (Confirmed and Completed) */}
+      <div>
+        <h2 className="text-xl font-semibold text-gray-800 mb-5">All Bookings</h2>
+        {/* Tabs */}
+        <div className="flex space-x-4 mb-5">
+          {["Confirmed", "Completed"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => {
+                setSelectedTab(tab);
+                setSelectedBooking(null); // Reset selected booking when changing tabs
+              }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                selectedTab === tab
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        {/* Table */}
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead>
+                <tr className="bg-gray-100 text-gray-700 text-sm font-medium">
+                  <th className="p-4 text-left">Booking ID</th>
+                  <th className="p-4 text-left">Customer</th>
+                  <th className="p-4 text-left">Trip Type</th>
+                  <th className="p-4 text-left">Pick-Up</th>
+                  <th className="p-4 text-left">Destination</th>
+                  <th className="p-4 text-left">Price</th>
+                  <th className="p-4 text-left">Status</th>
+                  <th className="p-4 text-left">Adjustments</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredBookings.length > 0 ? (
+                  filteredBookings.map((booking) => (
+                    <tr
+                      key={booking.id}
+                      onClick={() => {
+                        setSelectedBooking(booking);
+                        setEditedPrice(booking.price); // Initialize edited price
+                        setEditedStatus(booking.status); // Initialize edited status
+                      }}
+                      className={`border-t border-gray-200 text-gray-600 text-sm cursor-pointer ${
+                        selectedBooking?.id === booking.id ? "bg-blue-50" : "hover:bg-gray-50"
+                      }`}
+                    >
+                      <td className="p-4">{booking.id}</td>
+                      <td className="p-4">
+                        <div>
+                          <p
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent row click from triggering
+                              setSelectedCustomer(booking.client);
+                            }}
+                            className="font-medium text-gray-800 hover:text-blue-600 cursor-pointer"
+                          >
+                            {booking.client.name}
+                          </p>
+                          <p className="text-xs text-gray-500">{booking.client.email}</p>
+                        </div>
+                      </td>
+                      <td className="p-4">{booking.tripType}</td>
+                      <td className="p-4">{booking.pickUp}</td>
+                      <td className="p-4">{booking.destination}</td>
+                      <td className="p-4">${booking.price.toFixed(2)}</td>
+                      <td className="p-4">
+                        <span
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                            booking.status === "Completed"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
+                          {booking.status}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        {(booking.status === "Confirmed" || booking.status === "Pending to Confirm") &&
+                        booking.comments ? (
+                          <span className="text-gray-600 italic">{booking.comments}</span>
+                        ) : (
+                          <span className="text-gray-400">No adjustments</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="8" className="p-6 text-gray-600 text-center">
+                      No bookings found for this status.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Booking Details Section with Edit Options */}
+        {selectedBooking && (
+          <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Booking Details (ID: {selectedBooking.id})</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <p className="text-sm text-gray-700">
+                  <span className="font-medium text-gray-900">Trip Type:</span> {selectedBooking.tripType}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <span className="font-medium text-gray-900">Pick-Up:</span> {selectedBooking.pickUp}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <span className="font-medium text-gray-900">Destination:</span> {selectedBooking.destination}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <span className="font-medium text-gray-900">Arrival Date & Time:</span>{" "}
+                  {selectedBooking.flightDetails.arrivalDate} at {selectedBooking.flightDetails.arrivalTime}
+                </p>
+                {selectedBooking.flightDetails.departureDate && (
+                  <p className="text-sm text-gray-700">
+                    <span className="font-medium text-gray-900">Departure Date & Time:</span>{" "}
+                    {selectedBooking.flightDetails.departureDate} at {selectedBooking.flightDetails.departureTime}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-3">
+                <p className="text-sm text-gray-700">
+                  <span className="font-medium text-gray-900">Vehicle:</span> {selectedBooking.vehicle.category} -{" "}
+                  {selectedBooking.vehicle.model}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <span className="font-medium text-gray-900">Driver:</span> {selectedBooking.driver}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <span className="font-medium text-gray-900">Passengers:</span> {selectedBooking.passengers} (Children:{" "}
+                  {selectedBooking.children})
+                </p>
+                {/* Editable Price */}
+                <div className="text-sm text-gray-700">
+                  <span className="font-medium text-gray-900">Price:</span>{" "}
+                  <input
+                    type="number"
+                    value={editedPrice !== null ? editedPrice : selectedBooking.price}
+                    onChange={(e) => setEditedPrice(e.target.value)}
+                    className="ml-2 p-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    step="0.01"
+                  />
+                </div>
+                {/* Editable Status */}
+                <div className="text-sm text-gray-700">
+                  <span className="font-medium text-gray-900">Status:</span>{" "}
+                  <select
+                    value={editedStatus || selectedBooking.status}
+                    onChange={(e) => setEditedStatus(e.target.value)}
+                    className="ml-2 p-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Pending to Confirm">Pending to Confirm</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+                {(selectedBooking.status === "Confirmed" || selectedBooking.status === "Pending to Confirm") &&
+                  selectedBooking.comments && (
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium text-gray-900">Adjustments:</span>{" "}
+                      <span className="italic">{selectedBooking.comments}</span>
+                    </p>
+                  )}
+                {/* Save Button */}
+                <button
+                  onClick={handleSaveChanges}
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Customer Details Modal */}
+      {selectedCustomer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">Customer Details</h3>
+              <button
+                onClick={() => setSelectedCustomer(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
             <div className="space-y-3">
               <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Customer Name:</span> {latestBooking.client.name}
+                <span className="font-medium text-gray-900">Name:</span> {selectedCustomer.name}
               </p>
               <p className="text-sm text-gray-700">
                 <span className="font-medium text-gray-900">Email:</span>{" "}
-                <a href={`mailto:${latestBooking.client.email}`} className="text-blue-600 hover:underline">
-                  {latestBooking.client.email}
+                <a href={`mailto:${selectedCustomer.email}`} className="text-blue-600 hover:underline">
+                  {selectedCustomer.email}
                 </a>
               </p>
               <p className="text-sm text-gray-700">
                 <span className="font-medium text-gray-900">Phone:</span>{" "}
-                <a href={`tel:${latestBooking.client.phone}`} className="text-blue-600 hover:underline">
-                  {latestBooking.client.phone}
+                <a href={`tel:${selectedCustomer.phone}`} className="text-blue-600 hover:underline">
+                  {selectedCustomer.phone}
                 </a>
               </p>
               <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Country:</span> {latestBooking.client.country}
-              </p>
-            </div>
-            {/* Booking Details */}
-            <div className="space-y-3">
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Trip Type:</span> {latestBooking.tripType}
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Pick-Up:</span> {latestBooking.pickUp}
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Destination:</span> {latestBooking.destination}
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Arrival Date & Time:</span>{" "}
-                {latestBooking.flightDetails.arrivalDate} at {latestBooking.flightDetails.arrivalTime}
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Vehicle:</span> {latestBooking.vehicle.category} -{" "}
-                {latestBooking.vehicle.model}
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Driver:</span> {latestBooking.driver}
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Passengers:</span> {latestBooking.passengers} (Children:{" "}
-                {latestBooking.children})
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Price:</span> ${latestBooking.price.toFixed(2)}
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Status:</span>{" "}
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                    latestBooking.status === "Completed"
-                      ? "bg-green-100 text-green-700"
-                      : latestBooking.status === "Confirmed"
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
-                >
-                  {latestBooking.status}
-                </span>
+                <span className="font-medium text-gray-900">Country:</span> {selectedCustomer.country}
               </p>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Section 2: All Bookings */}
-      <div>
-        <h2 className="text-xl font-semibold text-gray-800 mb-5">All Bookings</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full border border-gray-200 rounded-lg shadow-sm">
-            <thead>
-              <tr className="bg-gray-100 text-gray-700 text-sm font-medium">
-                <th className="p-4 text-left">Booking ID</th>
-                <th className="p-4 text-left">Customer</th>
-                <th className="p-4 text-left">Trip Type</th>
-                <th className="p-4 text-left">Pick-Up</th>
-                <th className="p-4 text-left">Destination</th>
-                <th className="p-4 text-left">Price</th>
-                <th className="p-4 text-left">Status</th>
-                <th className="p-4 text-left">Adjustments</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.map((booking) => (
-                <tr key={booking.id} className="border-t border-gray-200 text-gray-600 text-sm hover:bg-gray-50">
-                  <td className="p-4">{booking.id}</td>
-                  <td className="p-4">
-                    <div>
-                      <p className="font-medium text-gray-800">{booking.client.name}</p>
-                      <p className="text-xs text-gray-500">{booking.client.email}</p>
-                    </div>
-                  </td>
-                  <td className="p-4">{booking.tripType}</td>
-                  <td className="p-4">{booking.pickUp}</td>
-                  <td className="p-4">{booking.destination}</td>
-                  <td className="p-4">${booking.price.toFixed(2)}</td>
-                  <td className="p-4">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                        booking.status === "Completed"
-                          ? "bg-green-100 text-green-700"
-                          : booking.status === "Confirmed"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {booking.status}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    {(booking.status === "Confirmed" || booking.status === "Pending to Confirm") &&
-                    booking.comments ? (
-                      <span className="text-gray-600 italic">{booking.comments}</span>
-                    ) : (
-                      <span className="text-gray-400">No adjustments</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
