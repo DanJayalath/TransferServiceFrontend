@@ -61,7 +61,7 @@ export default function MessageThread() {
     },
   ]);
 
-  const [selectedThread, setSelectedThread] = useState(threads[4]); // Default to "Dribbble" thread as shown in the image
+  const [selectedThread, setSelectedThread] = useState(threads[4]); 
 
   const addNewThread = (customer, topic, message) => {
     const newThread = {
