@@ -215,6 +215,38 @@ export default function Sidebar({ isOpen, onClose }) {
                         <span>Drivers</span>
                       </NavLink>
                     </li>
+                    <li>
+                      <NavLink
+                        to="./Vehicles"
+                        className={({ isActive }) =>
+                          `flex items-center p-1 rounded text-xs transition-colors duration-200 text-gray-600 ${
+                            isActive
+                              ? "bg-white border-l-2 border-black text-black"
+                              : "hover:bg-gray-50"
+                          }`
+                        }
+                        onClick={() => onClose()}
+                      >
+                        <span className="w-3 h-3 bg-gray-300 rounded-full mr-2"></span>
+                        <span>Vehicles</span>
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="./LocationRoutes"
+                        className={({ isActive }) =>
+                          `flex items-center p-1 rounded text-xs transition-colors duration-200 text-gray-600 ${
+                            isActive
+                              ? "bg-white border-l-2 border-black text-black"
+                              : "hover:bg-gray-50"
+                          }`
+                        }
+                        onClick={() => onClose()}
+                      >
+                        <span className="w-3 h-3 bg-gray-300 rounded-full mr-2"></span>
+                        <span>Tour Routes</span>
+                      </NavLink>
+                    </li>
                   </ul>
                 )}
               </div>

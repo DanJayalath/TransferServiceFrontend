@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
-// Import Inter font from Google Fonts (you can add this in your index.html or CSS)
+// Import Inter font (you can add this in your index.html or CSS)
 const interFontLink = (
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
@@ -77,10 +78,9 @@ export default function Bookings() {
     },
   ]);
 
-  // State for selected tab, selected booking, selected customer, and editable fields
+  // State for selected tab and selected booking
   const [selectedTab, setSelectedTab] = useState("Confirmed");
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [editedPrice, setEditedPrice] = useState(null);
   const [editedStatus, setEditedStatus] = useState(null);
 
@@ -145,8 +145,8 @@ export default function Bookings() {
                       key={booking.id}
                       onClick={() => {
                         setSelectedBooking(booking);
-                        setEditedPrice(booking.price); // Initialize edited price
-                        setEditedStatus(booking.status); // Initialize edited status
+                        setEditedPrice(booking.price);
+                        setEditedStatus(booking.status);
                       }}
                       className={`border-t border-gray-200 text-gray-600 text-sm cursor-pointer ${
                         selectedBooking?.id === booking.id ? "bg-blue-50" : "hover:bg-gray-50"
@@ -155,15 +155,12 @@ export default function Bookings() {
                       <td className="p-4">{booking.id}</td>
                       <td className="p-4">
                         <div>
-                          <p
-                            onClick={(e) => {
-                              e.stopPropagation(); // Prevent row click from triggering
-                              setSelectedCustomer(booking.client);
-                            }}
-                            className="font-medium text-gray-800 hover:text-blue-600 cursor-pointer"
+                          <Link
+                            to={`/Dashboard/CustomerProfile/${booking.client.email}`}
+                            className="font-medium text-gray-800 hover:text-blue-600"
                           >
                             {booking.client.name}
-                          </p>
+                          </Link>
                           <p className="text-xs text-gray-500">{booking.client.email}</p>
                         </div>
                       </td>
@@ -199,7 +196,7 @@ export default function Bookings() {
               key={tab}
               onClick={() => {
                 setSelectedTab(tab);
-                setSelectedBooking(null); // Reset selected booking when changing tabs
+                setSelectedBooking(null);
               }}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedTab === tab
@@ -234,8 +231,8 @@ export default function Bookings() {
                       key={booking.id}
                       onClick={() => {
                         setSelectedBooking(booking);
-                        setEditedPrice(booking.price); // Initialize edited price
-                        setEditedStatus(booking.status); // Initialize edited status
+                        setEditedPrice(booking.price);
+                        setEditedStatus(booking.status);
                       }}
                       className={`border-t border-gray-200 text-gray-600 text-sm cursor-pointer ${
                         selectedBooking?.id === booking.id ? "bg-blue-50" : "hover:bg-gray-50"
@@ -244,15 +241,12 @@ export default function Bookings() {
                       <td className="p-4">{booking.id}</td>
                       <td className="p-4">
                         <div>
-                          <p
-                            onClick={(e) => {
-                              e.stopPropagation(); // Prevent row click from triggering
-                              setSelectedCustomer(booking.client);
-                            }}
-                            className="font-medium text-gray-800 hover:text-blue-600 cursor-pointer"
+                          <Link
+                            to={`/Dashboard/CustomerProfile/${booking.client.email}`}
+                            className="font-medium text-gray-800 hover:text-blue-600"
                           >
                             {booking.client.name}
-                          </p>
+                          </Link>
                           <p className="text-xs text-gray-500">{booking.client.email}</p>
                         </div>
                       </td>
@@ -374,45 +368,6 @@ export default function Bookings() {
           </div>
         )}
       </div>
-
-      {/* Customer Details Modal */}
-      {selectedCustomer && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Customer Details</h3>
-              <button
-                onClick={() => setSelectedCustomer(null)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="space-y-3">
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Name:</span> {selectedCustomer.name}
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Email:</span>{" "}
-                <a href={`mailto:${selectedCustomer.email}`} className="text-blue-600 hover:underline">
-                  {selectedCustomer.email}
-                </a>
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Phone:</span>{" "}
-                <a href={`tel:${selectedCustomer.phone}`} className="text-blue-600 hover:underline">
-                  {selectedCustomer.phone}
-                </a>
-              </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-medium text-gray-900">Country:</span> {selectedCustomer.country}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

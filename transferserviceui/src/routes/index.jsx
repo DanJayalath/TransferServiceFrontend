@@ -9,6 +9,9 @@ import Locations from '../pages/Dashboard/Locations';
 import Drivers from '../pages/Dashboard/Drivers'; 
 import Bookings from '../pages/Dashboard/Bookings'; 
 import Messeges from '../pages/Dashboard/Messeges'; 
+import Vehicles from '../pages/Dashboard/Vehicles'; 
+import LocationRoutes from '../pages/Dashboard/LocationRoutes'; 
+import CustomerProfile from '../pages/Dashboard/CustomerProfile'; 
 
 const AppRoutes = () => {
   return (
@@ -27,7 +30,10 @@ const AppRoutes = () => {
           <Route index element={<Overview />} />
           <Route path="LocationCategories" element={<LocationCategories />} />
           <Route path="locations" element={<Locations />} />
+          <Route path="Vehicles" element={<Vehicles />} />
           <Route path="drivers" element={<Drivers />} />
+          <Route path="LocationRoutes" element={<LocationRoutes />} />
+          <Route path="CustomerProfile/:email" element={<CustomerProfile />} />
           <Route path="Bookings" element={<Bookings />} />
           <Route path="Messeges" element={<Messeges />} />
         </Route>
