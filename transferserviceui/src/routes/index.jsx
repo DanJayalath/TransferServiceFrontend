@@ -4,6 +4,7 @@ import LandingLayout from '../layouts/LandingLayout';
 import DashboardLayout from '../layouts/DashboardLayout';
 import Overview from '../pages/Dashboard/Overview';
 import Home from '../pages/LandingPage/Home';
+import Login from '../pages/LandingPage/UserProfile';
 import LocationCategories from '../pages/Dashboard/LocationCategories'; 
 import Locations from '../pages/Dashboard/Locations'; 
 import Drivers from '../pages/Dashboard/Drivers'; 
@@ -20,8 +21,8 @@ const AppRoutes = () => {
         {/* Landing Page Routes */}
         <Route path="/" element={<LandingLayout />}>
           <Route index element={<Home />} />
-          {/* <Route path="about-us" element={<AboutUs />} />
-          <Route path="contact-us" element={<ContactUs />} />
+         <Route path="user-profile" element={<Login />} />
+          {/*  <Route path="contact-us" element={<ContactUs />} />
           <Route path="reservation" element={<Reservation />} /> */}
         </Route>
 
