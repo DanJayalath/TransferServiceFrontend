@@ -1,32 +1,47 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate(); // Hook for programmatic navigation
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  // Hardcoded user data for validation
+  const hardcodedUsers = [
+    { username: 'user', password: '123', role: 'user' },
+    { username: 'admin', password: '123', role: 'admin' },
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add your login logic here (e.g., API call)
-    console.log('Username:', username);
-    console.log('Password:', password);
+    setError('');
 
-    // Simulate a successful login and navigate to the dashboard
-    // In a real app, you would validate credentials with an API call
-    navigate('/dashboard');
+    const user = hardcodedUsers.find(
+      (u) => u.username === username && u.password === password
+    );
+
+    if (user) {
+      console.log('Login successful:', user);
+      if (user.role === 'admin') {
+        navigate('/dashboard'); // Navigate to dashboard for admin
+      } else {
+        navigate('/userProfile'); // Navigate to userProfile for regular user
+      }
+    } else {
+      setError('Invalid username or password');
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      {/* Background shapes (optional, for decorative purposes) */}
-      <div className="absolute top-10 left-10 w-32 h-32 bg-blue-200 rounded-full opacity-50"></div>
+    <div className="min-h-screen flex items-start justify-center bg-gray-100 pt-16">
+      {/* Background shapes */}
+      <div className="absolute top-5 left-5 w-32 h-32 bg-blue-200 rounded-full opacity-50"></div>
       <div className="absolute bottom-10 right-10 w-40 h-40 bg-blue-300 rounded-full opacity-50"></div>
-      <div className="absolute top-20 right-20 w-16 h-16 bg-purple-200 rounded-full opacity-50"></div>
+      <div className="absolute top-10 right-10 w-16 h-16 bg-purple-200 rounded-full opacity-50"></div>
 
       {/* Login Card */}
       <div className="relative bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
-        {/* Logo/Title */}
         <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
           Welcome!{' '}
           <span className="text-sm font-normal block">
@@ -34,9 +49,14 @@ const LoginForm = () => {
           </span>
         </h1>
 
-        {/* Form */}
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 text-red-500 text-center">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
-          {/* Username Input */}
           <div className="mb-4">
             <label htmlFor="username" className="block text-gray-600 text-sm font-medium mb-2">
               Username
@@ -52,7 +72,6 @@ const LoginForm = () => {
             />
           </div>
 
-          {/* Password Input */}
           <div className="mb-4">
             <label htmlFor="password" className="block text-gray-600 text-sm font-medium mb-2">
               Password
@@ -68,14 +87,12 @@ const LoginForm = () => {
             />
           </div>
 
-          {/* Forgot Password Link */}
           <div className="text-right mb-6">
             <a href="#" className="text-sm text-blue-500 hover:underline">
               Forgot password?
             </a>
           </div>
 
-          {/* Sign In Button */}
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300"

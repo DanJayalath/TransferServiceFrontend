@@ -5,6 +5,7 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import Overview from '../pages/Dashboard/Overview';
 import Home from '../pages/LandingPage/Home';
 import Login from '../pages/LandingPage/UserProfile';
+import UserProfile from '../pages/LandingPage/UserProfile/UserProfile';
 import LocationCategories from '../pages/Dashboard/LocationCategories'; 
 import Locations from '../pages/Dashboard/Locations'; 
 import Drivers from '../pages/Dashboard/Drivers'; 
@@ -22,6 +23,7 @@ const AppRoutes = () => {
         <Route path="/" element={<LandingLayout />}>
           <Route index element={<Home />} />
          <Route path="user-profile" element={<Login />} />
+         <Route path="userProfile" element={<UserProfile />} />
           {/*  <Route path="contact-us" element={<ContactUs />} />
           <Route path="reservation" element={<Reservation />} /> */}
         </Route>
