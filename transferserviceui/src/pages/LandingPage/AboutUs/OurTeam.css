@@ -1,0 +1,49 @@
+/* OurTeam.css */
+.our-team {
+    padding: 50px 20px;
+    text-align: center;
+    background: #f5f5f5;
+  }
+  
+  .our-team h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
+  
+  .our-team p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 30px;
+  }
+  
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  .team-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .team-card img {
+    max-width: 200px;
+    height: auto;
+    /* object-fit: cover; */
+    border-radius: 5%;
+    margin:auto;
+
+  }
+  
+  .team-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+  }
+  
+  .team-card p {
+    font-size: 1rem;
+    color: #666;
+  }

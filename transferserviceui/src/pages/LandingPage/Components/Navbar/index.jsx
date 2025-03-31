@@ -18,10 +18,10 @@ const Navbar = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
             <Link to="/" className="text-gray-700 hover:text-blue-600 transition duration-300">
               Home
             </Link>
-            <Link to="/about" className="text-gray-700 hover:text-blue-600 transition duration-300">
+            <Link to="/AboutUs" className="text-gray-700 hover:text-blue-600 transition duration-300">
               About Us
             </Link>
-            <Link to="/contact" className="text-gray-700 hover:text-blue-600 transition duration-300">
+            <Link to="/ContactUs" className="text-gray-700 hover:text-blue-600 transition duration-300">
               Contact
             </Link>
             <Link to="/ai-assistant" className="text-gray-700 hover:text-blue-600 transition duration-300">
@@ -83,14 +83,14 @@ const Navbar = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
               Home
             </Link>
             <Link
-              to="/about"
+              to="/AboutUs"
               className="block text-gray-700 hover:text-blue-600 transition duration-300"
               onClick={onToggleMobileMenu} // Use the prop
             >
               About Us
             </Link>
             <Link
-              to="/contact"
+              to="/ContactUs"
               className="block text-gray-700 hover:text-blue-600 transition duration-300"
               onClick={onToggleMobileMenu} // Use the prop
             >

@@ -4,6 +4,8 @@ import LandingLayout from '../layouts/LandingLayout';
 import DashboardLayout from '../layouts/DashboardLayout';
 import Overview from '../pages/Dashboard/Overview';
 import Home from '../pages/LandingPage/Home';
+import AboutUs from '../pages/LandingPage/AboutUs';
+import ContactUs from "../pages/LandingPage/ContactUs";
 import Login from '../pages/LandingPage/UserProfile';
 import UserProfile from '../pages/LandingPage/UserProfile/UserProfile';
 import LocationCategories from '../pages/Dashboard/LocationCategories'; 
@@ -24,6 +26,8 @@ const AppRoutes = () => {
           <Route index element={<Home />} />
          <Route path="user-profile" element={<Login />} />
          <Route path="userProfile" element={<UserProfile />} />
+         <Route path="AboutUs" element={<AboutUs />} />
+         <Route path="ContactUs" element={<ContactUs />} />
           {/*  <Route path="contact-us" element={<ContactUs />} />
           <Route path="reservation" element={<Reservation />} /> */}
         </Route>
