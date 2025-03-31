@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Vehicles() {
-  // State for form inputs, vehicles list, and modals
   const [vehicleNo, setVehicleNo] = useState("");
   const [vehicleCategory, setVehicleCategory] = useState("");
   const [vehicleModel, setVehicleModel] = useState("");
@@ -10,37 +9,63 @@ export default function Vehicles() {
   const [editId, setEditId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const [detailsId, setDetailsId] = useState(null);
+  const [error, setError] = useState(null);
 
-  // Vehicle categories
+  const API_URL = "https://localhost:7299/api/Vehicles";
   const categories = ["Economical Car", "Luxury Car", "Mini Van", "Sport Car"];
 
-  // Handle form submission to add or update a vehicle
-  const handleSubmit = (e) => {
+  // Fetch all vehicles on component mount
+  useEffect(() => {
+    fetchVehicles();
+  }, []);
+
+  const fetchVehicles = async () => {
+    try {
+      const response = await fetch(API_URL);
+      if (!response.ok) throw new Error("Failed to fetch vehicles");
+      const data = await response.json();
+      setVehicles(data);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!vehicleNo.trim() || !vehicleCategory || !vehicleModel.trim() || !price.trim()) return;
 
     const vehicleData = {
-      id: editId || Date.now(),
+      id: editId || 0, // 0 for new vehicles, API will generate actual ID
       vehicleNo,
       vehicleCategory,
       vehicleModel,
-      price,
+      price: parseFloat(price),
     };
 
-    if (editId) {
-      setVehicles(
-        vehicles.map((vehicle) =>
-          vehicle.id === editId ? vehicleData : vehicle
-        )
-      );
+    try {
+      const method = editId ? "PUT" : "POST";
+      const url = editId ? `${API_URL}/${editId}` : API_URL;
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(vehicleData),
+      });
+
+      if (!response.ok) throw new Error(`Failed to ${editId ? "update" : "add"} vehicle`);
+
+      await fetchVehicles(); // Refresh the list
       setEditId(null);
-    } else {
-      setVehicles([...vehicles, vehicleData]);
+      resetForm();
+      setError(null);
+    } catch (err) {
+      setError(err.message);
     }
-    resetForm();
   };
 
-  // Reset form fields
   const resetForm = () => {
     setVehicleNo("");
     setVehicleCategory("");
@@ -48,41 +73,45 @@ export default function Vehicles() {
     setPrice("");
   };
 
-  // Handle edit button click
   const handleEdit = (vehicle) => {
     setEditId(vehicle.id);
     setVehicleNo(vehicle.vehicleNo);
     setVehicleCategory(vehicle.vehicleCategory);
     setVehicleModel(vehicle.vehicleModel);
-    setPrice(vehicle.price);
+    setPrice(vehicle.price.toString());
   };
 
-  // Handle delete request
   const handleDeleteRequest = (id) => {
     setDeleteId(id);
   };
 
-  // Confirm delete
-  const confirmDelete = () => {
-    setVehicles(vehicles.filter((vehicle) => vehicle.id !== deleteId));
-    if (editId === deleteId) {
-      setEditId(null);
-      resetForm();
+  const confirmDelete = async () => {
+    try {
+      const response = await fetch(`${API_URL}/${deleteId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Failed to delete vehicle");
+
+      await fetchVehicles();
+      if (editId === deleteId) {
+        setEditId(null);
+        resetForm();
+      }
+      setDeleteId(null);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
     }
-    setDeleteId(null);
   };
 
-  // Cancel delete
   const cancelDelete = () => {
     setDeleteId(null);
   };
 
-  // Show vehicle details
   const showDetails = (id) => {
     setDetailsId(id);
   };
 
-  // Close details modal
   const closeDetails = () => {
     setDetailsId(null);
   };
@@ -90,8 +119,14 @@ export default function Vehicles() {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <h1 className="text-3xl font-bold text-gray-800 mb-6">Vehicles</h1>
+
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            {error}
+          </div>
+        )}
 
         {/* Form */}
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
