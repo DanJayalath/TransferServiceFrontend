@@ -1,27 +1,20 @@
-// Services.js
-import React from 'react';
-import './Services.css';
+// src/Home/Services.jsx
+import ServiceCard from '../Components/ServiceCard';
 
 const Services = () => {
   const services = [
-    { title: 'Charles de Gaulle Airport to Disney', description: 'A private transfer from Charles de Gaulle Airport (CDG) to Disneyland Paris, offering door-to-door service. Pre-book a car or van for a stress-free, direct ride to your Disney hotel or park entrance, ideal for families or groups.', img: '/Images/Services1.webp' },
-    { title: 'Orly Airport to Disney', description: 'A private transfer from Orly Airport to Disneyland Paris offers a comfortable and direct journey with a dedicated driver, ensuring a stress-free start to your Disney experience.', img: '/Images/Services2.webp' },
-    { title: 'Beauvais–Tillé Airport to Disney', description: 'Enjoy a seamless private transfer from Beauvais–Tillé Airport to Disneyland Paris in a comfortable, air-conditioned vehicle. Avoid long waits and travel in style with a personalized, door-to-door service.', img: '/Images/Services3.webp' },
-    
+    { title: 'Airport Transfers', description: 'We offer well-timed airport transfers.', image: 'https://via.placeholder.com/300' },
+    { title: 'Wedding Events', description: 'Combine luxury and celebration.', image: 'https://via.placeholder.com/300' },
+    { title: 'Intercity Trips', description: 'Your exclusive intercity chauffeur.', image: 'https://via.placeholder.com/300' },
+    { title: 'Business Meetings', description: 'Arrive in style for your meetings.', image: 'https://via.placeholder.com/300' },
   ];
 
   return (
-    <section className="services">
-      <h2>Our Popular Services</h2>
-      <p>We invite you to try our services, and we personally guarantee...</p>
-      <div className="services-grid">
+    <section className="py-12 px-4">
+      <h2 className="text-3xl font-bold text-center mb-8">Services</h2>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {services.map((service, index) => (
-          <div key={index} className="service-card">
-            <img src={service.img} alt={service.title} />
-            <h3>{service.title}</h3>
-            <p>{service.description}</p>
-            <button>Book Now</button>
-          </div>
+          <ServiceCard key={index} title={service.title} description={service.description} image={service.image} />
         ))}
       </div>
     </section>

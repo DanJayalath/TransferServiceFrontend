@@ -1,69 +1,29 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import './AboutUs.css';
-import Hero from './Hero.Jsx';
-import OurStory from './OurStory.jsx';
-import OurTeam from './OurTeam.Jsx';
-import OurValues from './OurValues.jsx';
-import Footer from '../Components/Footer/Footer';
 
 const AboutUs = () => {
-  return (
-    <>
-    <Hero/>
-    <OurStory/>
-    <OurTeam/>
-    <OurValues/>
-    <Footer/>
-
-    <Link to="/Dashboard/">Go to Dashboard Overview</Link>
-    </>
-    // <div className="about-section">
-    //   <h1>About Us Page</h1>
-    //   <p>Some text about who we are and what we do.</p>
-    //   <p>Resize the browser window to see that this page is responsive.</p>
-    //   <h2>Our Team</h2>
-    //   <div className="row">
-    //     <div className="column">
-    //       <div className="card">
-    //         <img src="https://via.placeholder.com/150" alt="Jane" />
-    //         <div className="container">
-    //           <h2>Jane Doe</h2>
-    //           <p className="title">CEO & Founder</p>
-    //           <p>Some text that describes Jane.</p>
-    //           <p>jane@example.com</p>
-    //           <p><button className="button">Contact</button></p>
-    //         </div>
-    //       </div>
-    //     </div>
-    //     <div className="column">
-    //       <div className="card">
-    //         <img src="https://via.placeholder.com/150" alt="Mike" />
-    //         <div className="container">
-    //           <h2>Mike Ross</h2>
-    //           <p className="title">Art Director</p>
-    //           <p>Some text that describes Mike.</p>
-    //           <p>mike@example.com</p>
-    //           <p><button className="button">Contact</button></p>
-    //         </div>
-    //       </div>
-    //     </div>
-    //     <div className="column">
-    //       <div className="card">
-    //         <img src="https://via.placeholder.com/150" alt="John" />
-    //         <div className="container">
-    //           <h2>John Doe</h2>
-    //           <p className="title">Designer</p>
-    //           <p>Some text that describes John.</p>
-    //           <p>john@example.com</p>
-    //           <p><button className="button">Contact</button></p>
-    //         </div>
-    //       </div>
-    //     </div>
-    //   </div>
-    // </div>
-
-  );
-};
-
-export default AboutUs;
+    return (
+      <section className="py-12 px-4 bg-white">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center">
+          {/* Left Side: Text Content */}
+          <div className="md:w-1/2 text-center md:text-left">
+            <h2 className="text-3xl font-bold mb-4">About Us</h2>
+            <p className="text-gray-600 mb-6">
+              At LIMO5, we are dedicated to providing top-notch luxury limousine services for all your travel needs. With years of experience in the industry, our mission is to deliver comfort, style, and reliability to every client. Whether it's a special event, business trip, or airport transfer, our professional drivers and premium fleet ensure a seamless and unforgettable experience.
+            </p>
+            <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+              Learn More
+            </button>
+          </div>
+          {/* Right Side: Image */}
+          <div className="md:w-1/2 mt-6 md:mt-0">
+            <img
+              src="https://via.placeholder.com/500x300"
+              alt="About Us"
+              className="w-full rounded-lg shadow-lg"
+            />
+          </div>
+        </div>
+      </section>
+    );
+  };
+  
+  export default AboutUs;

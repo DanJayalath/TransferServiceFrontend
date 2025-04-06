@@ -1,35 +1,20 @@
-// Fleet.js
-import React, { useState } from 'react';
-import './Fleet.css';
+// src/Home/Fleet.jsx
+import FleetCard from '../Components/FleetCard';
 
 const Fleet = () => {
-  const [activeTab, setActiveTab] = useState('Luxury');
-
-  const cars = [
-    { category: 'Luxury', name: 'Mercedes-Benz S Class', img: 'mercedes-s.jpg', seats: 2, doors: 4 },
-    { category: 'Business', name: 'Mercedes-Benz V Class', img: 'mercedes-v.jpg', seats: 6, doors: 4 },
-    { category: 'Luxury', name: 'Audi A8', img: 'audi-a8.jpg', seats: 2, doors: 4 },
-    { category: 'Crossover', name: 'Rolls-Royce', img: 'rolls-royce.jpg', seats: 2, doors: 4 },
+  const vehicles = [
+    { name: 'Mercedes-Benz S Class', seats: 2, image: 'https://via.placeholder.com/300' },
+    { name: 'Mercedes-Benz V Class', seats: 6, image: 'https://via.placeholder.com/300' },
+    { name: 'Audi A8', seats: 2, image: 'https://via.placeholder.com/300' },
+    { name: 'Rolls-Royce', seats: 2, image: 'https://via.placeholder.com/300' },
   ];
 
-  const filteredCars = cars.filter(car => car.category === activeTab);
-
   return (
-    <section className="fleet">
-      <h2>Our Fleet</h2>
-      <p>We offer an extensive range of vehicles including sedans...</p>
-      <div className="tabs">
-        <button onClick={() => setActiveTab('Luxury')} className={activeTab === 'Luxury' ? 'active' : ''}>Luxury</button>
-        <button onClick={() => setActiveTab('Business')} className={activeTab === 'Business' ? 'active' : ''}>Business</button>
-        <button onClick={() => setActiveTab('Crossover')} className={activeTab === 'Crossover' ? 'active' : ''}>Crossover</button>
-      </div>
-      <div className="fleet-grid">
-        {filteredCars.map((car, index) => (
-          <div key={index} className="fleet-card">
-            <img src={car.img} alt={car.name} />
-            <h3>{car.name}</h3>
-            <p>Seats: {car.seats} | Doors: {car.doors}</p>
-          </div>
+    <section className="py-12 px-4 bg-gray-100">
+      <h2 className="text-3xl font-bold text-center mb-8">Our Fleet</h2>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {vehicles.map((vehicle, index) => (
+          <FleetCard key={index} name={vehicle.name} seats={vehicle.seats} image={vehicle.image} />
         ))}
       </div>
     </section>

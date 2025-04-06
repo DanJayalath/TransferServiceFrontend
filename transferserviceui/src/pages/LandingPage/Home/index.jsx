@@ -1,25 +1,20 @@
-// pages/LandingPage/Home.jsx
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Hero from './Hero';
+import Header from './Header'; 
 import Services from './Services';
 import Fleet from './Fleet';
 import WhyChooseUs from './WhyChooseUs';
-import SpecialOffer from './SpecialOffer';
-import Footer from '../Components/Footer/Footer';
+import Deal from './Deal';
+import Footer from '../Components/Footer';
 
 const Home = () => {
   return (
-   <>
-      <Hero/>
-      <Services/>
-      <Fleet/>
-      <WhyChooseUs/>
-      <SpecialOffer/>
-      <Footer/>
-
-      
- </>
+    <div className="min-h-screen bg-gray-100">
+ <Header /> 
+      <Services />
+      <Fleet />
+      <WhyChooseUs />
+      <Deal />
+ <Footer />
+    </div>
   );
 };
 

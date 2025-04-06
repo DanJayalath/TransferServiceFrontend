@@ -1,26 +1,20 @@
-// WhyChooseUs.js
-import React from 'react';
-import './WhyChooseUs.css';
+// src/Home/WhyChooseUs.jsx
+import ReasonCard from '../Components/ReasonCard';
 
 const WhyChooseUs = () => {
   const reasons = [
-    { title: 'Online Booking', description: 'Booking with us is easy and flexible. With our user-friendly app or a simple phone call, you can have a taxi at your doorstep in no time.', icon: '/Images/OnlineBookingService.jpeg' },
-    { title: 'Professional Drivers', description: 'Your safety is our priority. Our experienced drivers and well-maintained vehicles ensure you reach your destination securely.', icon: '/Images/CabDriverWCU.jpeg' },
-    { title: 'Variety of Car Brands', description: 'Lorem ipsum dolor sit amet...', icon: '/Images/vehiclesWCU.jpg' },
-    { title: 'Customer Satisfaction', description: 'our satisfaction is our goal, and we are always ready to go the extra mile to make your journey pleasant and stress-free.', icon: '/Images/CustomerSatisfactionWCU.jpeg' },
+    { title: 'Online Booking', description: 'Book your limo easily online.' },
+    { title: 'Professional Drivers', description: 'Experienced and courteous drivers.' },
+    { title: 'Variety of Car Brands', description: 'Choose from a range of luxury cars.' },
+    { title: 'Online Payment', description: 'Secure and convenient payment options.' },
   ];
 
   return (
-    <section className="why-choose-us">
-      <h2>Why Choose Us</h2>
-      <p>We use only the best in our services...</p>
-      <div className="reasons-grid">
+    <section className="py-12 px-4">
+      <h2 className="text-3xl font-bold text-center mb-8">Why Choose Us</h2>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {reasons.map((reason, index) => (
-          <div key={index} className="reason-card">
-            <img src={reason.icon} alt={reason.title} />
-            <h3>{reason.title}</h3>
-            <p>{reason.description}</p>
-          </div>
+          <ReasonCard key={index} title={reason.title} description={reason.description} />
         ))}
       </div>
     </section>
