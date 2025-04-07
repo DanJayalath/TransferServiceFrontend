@@ -24,7 +24,7 @@ const Navbar = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
             <Link to="/ContactUs" className="text-gray-700 hover:text-blue-600 transition duration-300">
               Contact
             </Link>
-            <Link to="/ai-assistant" className="text-gray-700 hover:text-blue-600 transition duration-300">
+            <Link to="/AIAssistant" className="text-gray-700 hover:text-blue-600 transition duration-300">
               AI Assistant
             </Link>
             <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">
