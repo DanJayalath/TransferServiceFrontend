@@ -1,46 +1,549 @@
-import React, { useState } from "react";
+import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-const ReservationPage = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    date: "",
-    time: "",
+// Placeholder images for cars
+const businessClassCar = 'https://media.istockphoto.com/id/1150931120/photo/3d-illustration-of-generic-compact-white-car-front-side-view.webp?a=1&b=1&s=612x612&w=0&k=20&c=xDkyTkz3TF6Wzgr5kADQSZ7dawgt-3iemOoFycHAPiE=';
+const businessVan = 'https://media.istockphoto.com/id/1150931120/photo/3d-illustration-of-generic-compact-white-car-front-side-view.webp?a=1&b=1&s=612x612&w=0&k=20&c=xDkyTkz3TF6Wzgr5kADQSZ7dawgt-3iemOoFycHAPiE=';
+const firstClassCar = 'https://media.istockphoto.com/id/1150931120/photo/3d-illustration-of-generic-compact-white-car-front-side-view.webp?a=1&b=1&s=612x612&w=0&k=20&c=xDkyTkz3TF6Wzgr5kADQSZ7dawgt-3iemOoFycHAPiE=';
+
+const Reservation = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const locationData = [
+    { category: "Airports", items: ["Paris Charles de Gaulle Airport", "Paris Orly Airport", "Lyon-Saint Exupéry Airport"] },
+    { category: "Train Stations", items: ["Gare du Nord", "Gare de Lyon", "Gare Montparnasse", "Gare de l'Est"] },
+    { category: "Hotels", items: ["Hilton Paris Opera", "Le Meurice", "Four Seasons Hotel George V", "Shangri-La Hotel Paris"] },
+    { category: "Landmarks", items: ["Eiffel Tower", "Louvre Museum", "Notre-Dame Cathedral", "Arc de Triomphe"] },
+  ];
+
+  const numberOptions = Array.from({ length: 14 }, (_, i) => (i + 1).toString());
+
+  const [bookingDetails, setBookingDetails] = useState({
+    tripType: location.state?.bookingDetails.tripType || '',
+    pickupLocation: location.state?.bookingDetails.pickupLocation || '',
+    dropOffLocation: location.state?.bookingDetails.dropOffLocation || '',
+    date: location.state?.bookingDetails.date || '',
+    time: location.state?.bookingDetails.time || '',
+    passengers: location.state?.bookingDetails.passengers || '',
+    handBaggage: location.state?.bookingDetails.handBaggage || '',
+    checkedBaggage: location.state?.bookingDetails.checkedBaggage || '',
+    arrivalDate: '',
+    arrivalTime: '',
+    arrivalFlight: '',
+    departureDate: '',
+    departureTime: '',
+    departureFlight: '',
+    remarks: '',
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const [personalDetails, setPersonalDetails] = useState({
+    name: '',
+    email: '',
+    country: '',
+    telephone: '',
+    password: '',
+    confirmPassword: '',
+  });
+
+  const [error, setError] = useState('');
+  const [selectedCar, setSelectedCar] = useState(null);
+  const [showSummary, setShowSummary] = useState(false);
+  const [bookingConfirmed, setBookingConfirmed] = useState(false);
+
+  const handleBookingDetailsChange = (e) => {
+    const { id, value } = e.target;
+    setBookingDetails((prevData) => ({
+      ...prevData,
+      [id]: value,
+    }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert(`Reservation confirmed for ${formData.name} on ${formData.date} at ${formData.time}`);
+  const handlePersonalDetailsChange = (e) => {
+    const { id, value } = e.target;
+    setPersonalDetails((prevData) => ({
+      ...prevData,
+      [id]: value,
+    }));
   };
+
+  const handleCarSelect = (car) => {
+    setSelectedCar(car);
+    setShowSummary(true);
+  };
+
+  const handlePersonalDetailsSubmit = (e) => {
+    e.preventDefault();
+    if (personalDetails.password !== personalDetails.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    const reservationData = { ...bookingDetails, ...personalDetails, selectedCar };
+    console.log('Reservation Data to be saved:', reservationData);
+
+    const isSuccess = Math.random() > 0.2; // 80% success rate
+    if (isSuccess) {
+      setError('');
+      setBookingConfirmed(true);
+    } else {
+      setError('Failed to save booking. Please try again.');
+    }
+  };
+
+  const handleBack = () => {
+    setShowSummary(false);
+    setSelectedCar(null);
+  };
+
+  const handleDownloadPDF = () => {
+    alert('PDF download functionality will be implemented later!');
+  };
+
+  if (!bookingDetails.tripType && !bookingConfirmed) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-200 flex items-center justify-center px-4">
+        <div className="bg-white text-gray-800 p-8 rounded-2xl shadow-2xl max-w-md w-full text-center transform transition-all hover:scale-105">
+          <h2 className="text-3xl font-bold mb-6 text-gray-900">No Reservation Found</h2>
+          <p className="mb-6 text-gray-600">Please go back and fill out the booking form to create a reservation.</p>
+          <button
+            onClick={() => navigate('/')}
+            className="bg-gradient-to-r from-gray-600 to-gray-800 text-white px-8 py-3 rounded-full hover:from-gray-700 hover:to-gray-900 transition-all duration-300 shadow-md hover:shadow-lg"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ textAlign: "center", maxWidth: "400px", margin: "auto" }}>
-      <h2>Reservation Page</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name:</label><br />
-          <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-200 py-12 px-4">
+      {!bookingConfirmed ? (
+        <div className="max-w-7xl mx-auto">
+          {/* Booking Details Section (Horizontal at Top) */}
+          <div className="w-full bg-white p-6 rounded-xl shadow-lg mb-8">
+            <h3 className="text-2xl font-bold mb-5 text-gray-900 tracking-tight">Booking Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label htmlFor="tripType" className="block text-sm font-medium text-gray-700 mb-1">Trip Type</label>
+                <select id="tripType" value={bookingDetails.tripType} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" required>
+                  <option value="" disabled>Select Trip Type</option>
+                  <option value="arrival">Arrival</option>
+                  <option value="departure">Departure</option>
+                  <option value="roundTrip">Round Trip</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="pickupLocation" className="block text-sm font-medium text-gray-700 mb-1">Pick Up Location</label>
+                <select id="pickupLocation" value={bookingDetails.pickupLocation} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" required>
+                  <option value="" disabled>Select Location</option>
+                  {locationData.map((category, index) => (
+                    <optgroup key={index} label={category.category}>
+                      {category.items.map((item, itemIndex) => (
+                        <option key={itemIndex} value={item}>{item}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="dropOffLocation" className="block text-sm font-medium text-gray-700 mb-1">Drop Off Location</label>
+                <select id="dropOffLocation" value={bookingDetails.dropOffLocation} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" required>
+                  <option value="" disabled>Select Location</option>
+                  {locationData.map((category, index) => (
+                    <optgroup key={index} label={category.category}>
+                      {category.items.map((item, itemIndex) => (
+                        <option key={itemIndex} value={item}>{item}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">Pick Up Date</label>
+                <input type="date" id="date" value={bookingDetails.date} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" required />
+              </div>
+              <div>
+                <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">Pick Up Time</label>
+                <input type="time" id="time" value={bookingDetails.time} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" required />
+              </div>
+              <div>
+                <label htmlFor="passengers" className="block text-sm font-medium text-gray-700 mb-1">Passengers</label>
+                <select id="passengers" value={bookingDetails.passengers} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" required>
+                  <option value="" disabled>Select Passengers</option>
+                  {numberOptions.map((num) => (
+                    <option key={num} value={num}>{num}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="handBaggage" className="block text-sm font-medium text-gray-700 mb-1">Hand Baggage</label>
+                <select id="handBaggage" value={bookingDetails.handBaggage} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" required>
+                  <option value="" disabled>Select Hand Baggage</option>
+                  {numberOptions.map((num) => (
+                    <option key={num} value={num}>{num}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="checkedBaggage" className="block text-sm font-medium text-gray-700 mb-1">Checked Baggage</label>
+                <select id="checkedBaggage" value={bookingDetails.checkedBaggage} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" required>
+                  <option value="" disabled>Select Checked Baggage</option>
+                  {numberOptions.map((num) => (
+                    <option key={num} value={num}>{num}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Remaining Sections */}
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* Trip Details Section */}
+            <div className="w-full md:w-1/4 bg-white p-6 rounded-xl shadow-lg transform transition-all hover:shadow-xl">
+              <h3 className="text-2xl font-bold mb-5 text-gray-900 tracking-tight">Trip Details</h3>
+              <div className="space-y-4">
+                {(bookingDetails.tripType === 'arrival' || bookingDetails.tripType === 'roundTrip') && (
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Arrival Details</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label htmlFor="arrivalDate" className="block text-sm font-medium text-gray-700 mb-1">Arrival Date</label>
+                        <input type="date" id="arrivalDate" value={bookingDetails.arrivalDate} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" required />
+                      </div>
+                      <div>
+                        <label htmlFor="arrivalTime" className="block text-sm font-medium text-gray-700 mb-1">Arrival Time</label>
+                        <input type="time" id="arrivalTime" value={bookingDetails.arrivalTime} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" required />
+                      </div>
+                      <div>
+                        <label htmlFor="arrivalFlight" className="block text-sm font-medium text-gray-700 mb-1">Flight Number</label>
+                        <input type="text" id="arrivalFlight" value={bookingDetails.arrivalFlight} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" placeholder="e.g., AF1234" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {(bookingDetails.tripType === 'departure' || bookingDetails.tripType === 'roundTrip') && (
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Departure Details</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label htmlFor="departureDate" className="block text-sm font-medium text-gray-700 mb-1">Departure Date</label>
+                        <input type="date" id="departureDate" value={bookingDetails.departureDate} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" required />
+                      </div>
+                      <div>
+                        <label htmlFor="departureTime" className="block text-sm font-medium text-gray-700 mb-1">Departure Time</label>
+                        <input type="time" id="departureTime" value={bookingDetails.departureTime} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" required />
+                      </div>
+                      <div>
+                        <label htmlFor="departureFlight" className="block text-sm font-medium text-gray-700 mb-1">Flight Number</label>
+                        <input type="text" id="departureFlight" value={bookingDetails.departureFlight} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" placeholder="e.g., AF5678" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <label htmlFor="remarks" className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                  <textarea id="remarks" value={bookingDetails.remarks} onChange={handleBookingDetailsChange} className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200" rows="3" placeholder="Additional notes or requests"></textarea>
+                </div>
+              </div>
+            </div>
+
+            {!showSummary ? (
+              <div className="w-full md:w-2/4 space-y-6">
+                {[
+                  { title: 'Business Class Car', desc: 'Mercedes-Benz E-Class or similar', img: businessClassCar, maxPassengers: 3, maxLuggage: 2, oldPrice: '350 EUR', newPrice: '330 EUR' },
+                  { title: 'Business Class Van', desc: 'Mercedes-Benz V-Class or similar', img: businessVan, maxPassengers: 6, maxLuggage: 8, oldPrice: '390 EUR', newPrice: '340 EUR' },
+                  { title: 'First Class Car', desc: 'Mercedes-Benz S-Class or similar', img: firstClassCar, maxPassengers: 3, maxLuggage: 2, oldPrice: '450 EUR', newPrice: '400 EUR' },
+                ].map((car, index) => (
+                  <div key={index} className="bg-white p-6 rounded-xl shadow-lg flex flex-col md:flex-row items-center justify-between transform transition-all hover:shadow-xl hover:scale-[1.02]">
+                    <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
+                      <img src={car.img} alt={car.title} className="w-40 h-20 object-cover rounded-lg shadow-md" />
+                      <div>
+                        <h4 className="text-xl font-semibold text-gray-900">{car.title}</h4>
+                        <p className="text-sm text-gray-600">{car.desc}</p>
+                        <div className="flex flex-wrap gap-2 mt-3 text-gray-700 text-sm">
+                          <span className="bg-gray-100 px-2 py-1 rounded-full">👤 Max Passengers: {car.maxPassengers}</span>
+                          <span className="bg-gray-100 px-2 py-1 rounded-full">🧳 Max Luggage: {car.maxLuggage}</span>
+                          <span className="bg-gray-100 px-2 py-1 rounded-full">🤝 Meet & Greet</span>
+                          <span className="bg-gray-100 px-2 py-1 rounded-full">🚪 Door-to-door</span>
+                          <span className="bg-gray-100 px-2 py-1 rounded-full">🛡️ Porter service</span>
+                          <span className="bg-gray-100 px-2 py-1 rounded-full">👶 Free child seats</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-center md:text-right mt-4 md:mt-0">
+                      <p className="text-sm text-gray-500 line-through">{car.oldPrice}</p>
+                      <p className="text-xl font-bold text-gray-900">{car.newPrice}</p>
+                      <p className="text-xs text-gray-500">Includes VAT & fees</p>
+                      <button
+                        onClick={() => handleCarSelect(car)}
+                        className="mt-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-6 py-2 rounded-full hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 shadow-md hover:shadow-lg"
+                      >
+                        Select
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="w-full bg-white p-8 rounded-xl shadow-2xl border border-gray-100 transform transition-all hover:shadow-3xl">
+                <h3 className="text-3xl font-bold text-gray-900 mb-6 tracking-tight border-b-2 border-yellow-500 pb-2 inline-block">Booking Summary</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="bg-gray-50 p-6 rounded-lg shadow-inner">
+                    <h4 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                      <span className="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2">1</span>
+                      Trip Details
+                    </h4>
+                    <div className="space-y-3 text-gray-700">
+                      <p className="flex justify-between border-b border-gray-200 pb-1">
+                        <span className="font-medium">Trip Type:</span>
+                        <span>{bookingDetails.tripType.charAt(0).toUpperCase() + bookingDetails.tripType.slice(1)}</span>
+                      </p>
+                      <p className="flex justify-between border-b border-gray-200 pb-1">
+                        <span className="font-medium">Pick Up:</span>
+                        <span>{bookingDetails.pickupLocation}</span>
+                      </p>
+                      <p className="flex justify-between border-b border-gray-200 pb-1">
+                        <span className="font-medium">Drop Off:</span>
+                        <span>{bookingDetails.dropOffLocation}</span>
+                      </p>
+                      <p className="flex justify-between border-b border-gray-200 pb-1">
+                        <span className="font-medium">Date:</span>
+                        <span>{bookingDetails.date}</span>
+                      </p>
+                      <p className="flex justify-between border-b border-gray-200 pb-1">
+                        <span className="font-medium">Time:</span>
+                        <span>{bookingDetails.time}</span>
+                      </p>
+                      <p className="flex justify-between border-b border-gray-200 pb-1">
+                        <span className="font-medium">Passengers:</span>
+                        <span>{bookingDetails.passengers}</span>
+                      </p>
+                      <p className="flex justify-between border-b border-gray-200 pb-1">
+                        <span className="font-medium">Hand Baggage:</span>
+                        <span>{bookingDetails.handBaggage}</span>
+                      </p>
+                      <p className="flex justify-between border-b border-gray-200 pb-1">
+                        <span className="font-medium">Checked Baggage:</span>
+                        <span>{bookingDetails.checkedBaggage}</span>
+                      </p>
+                      {(bookingDetails.tripType === 'arrival' || bookingDetails.tripType === 'roundTrip') && (
+                        <>
+                          <p className="flex justify-between border-b border-gray-200 pb-1">
+                            <span className="font-medium">Arrival Date:</span>
+                            <span>{bookingDetails.arrivalDate}</span>
+                          </p>
+                          <p className="flex justify-between border-b border-gray-200 pb-1">
+                            <span className="font-medium">Arrival Time:</span>
+                            <span>{bookingDetails.arrivalTime}</span>
+                          </p>
+                          <p className="flex justify-between border-b border-gray-200 pb-1">
+                            <span className="font-medium">Arrival Flight:</span>
+                            <span>{bookingDetails.arrivalFlight || 'N/A'}</span>
+                          </p>
+                        </>
+                      )}
+                      {(bookingDetails.tripType === 'departure' || bookingDetails.tripType === 'roundTrip') && (
+                        <>
+                          <p className="flex justify-between border-b border-gray-200 pb-1">
+                            <span className="font-medium">Departure Date:</span>
+                            <span>{bookingDetails.departureDate}</span>
+                          </p>
+                          <p className="flex justify-between border-b border-gray-200 pb-1">
+                            <span className="font-medium">Departure Time:</span>
+                            <span>{bookingDetails.departureTime}</span>
+                          </p>
+                          <p className="flex justify-between border-b border-gray-200 pb-1">
+                            <span className="font-medium">Departure Flight:</span>
+                            <span>{bookingDetails.departureFlight || 'N/A'}</span>
+                          </p>
+                        </>
+                      )}
+                      <p className="flex justify-between border-b border-gray-200 pb-1">
+                        <span className="font-medium">Remarks:</span>
+                        <span>{bookingDetails.remarks || 'None'}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-6 rounded-lg shadow-inner">
+                    <h4 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                      <span className="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2">2</span>
+                      Selected Vehicle
+                    </h4>
+                    <div className="flex flex-col space-y-4">
+                      <div className="flex items-center space-x-4">
+                        <img src={selectedCar.img} alt={selectedCar.title} className="w-32 h-16 object-cover rounded-lg shadow-md border border-gray-200" />
+                        <div>
+                          <p className="text-lg font-semibold text-gray-900">{selectedCar.title}</p>
+                          <p className="text-sm text-gray-600">{selectedCar.desc}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-3 text-gray-700">
+                        <p className="flex justify-between border-b border-gray-200 pb-1">
+                          <span className="font-medium">Price:</span>
+                          <span className="text-green-600 font-semibold">{selectedCar.newPrice} <span className="text-sm text-gray-500 line-through">{selectedCar.oldPrice}</span></span>
+                        </p>
+                        <p className="flex justify-between border-b border-gray-200 pb-1">
+                          <span className="font-medium">Max Passengers:</span>
+                          <span>{selectedCar.maxPassengers}</span>
+                        </p>
+                        <p className="flex justify-between border-b border-gray-200 pb-1">
+                          <span className="font-medium">Max Luggage:</span>
+                          <span>{selectedCar.maxLuggage}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {error && <p className="mt-4 text-red-600 text-sm font-medium bg-red-50 p-2 rounded-lg">{error}</p>}
+                <div className="mt-8 flex justify-between items-center">
+                  <button
+                    onClick={handleBack}
+                    className="bg-gradient-to-r from-gray-700 to-gray-900 text-white px-6 py-2 rounded-full hover:from-gray-800 hover:to-black transition-all duration-300 shadow-md hover:shadow-lg flex items-center"
+                  >
+                    <span className="mr-2">←</span> Back to Options
+                  </button>
+                  <div className="text-right flex items-center space-x-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Total (VAT & fees included)</p>
+                      <p className="text-2xl font-bold text-gray-900">{selectedCar.newPrice}</p>
+                    </div>
+                    <button
+                      onClick={handlePersonalDetailsSubmit}
+                      className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-8 py-3 rounded-full hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      Confirm Booking
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="w-full md:w-1/4 bg-white p-6 rounded-xl shadow-2xl border border-gray-100 transform transition-all hover:shadow-3xl">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 tracking-tight border-b-2 border-yellow-500 pb-2 inline-block">Personal Details</h3>
+              <form className="space-y-5">
+                {[
+                  { id: 'name', label: 'Full Name', type: 'text' },
+                  { id: 'email', label: 'Email Address', type: 'email' },
+                  { id: 'country', label: 'Country', type: 'text' },
+                  { id: 'telephone', label: 'Telephone', type: 'tel' },
+                  { id: 'password', label: 'Password', type: 'password' },
+                  { id: 'confirmPassword', label: 'Confirm Password', type: 'password' },
+                ].map((field) => (
+                  <div key={field.id}>
+                    <label htmlFor={field.id} className="block text-sm font-medium text-gray-800 mb-2">{field.label}</label>
+                    <input
+                      type={field.type}
+                      id={field.id}
+                      value={personalDetails[field.id]}
+                      onChange={handlePersonalDetailsChange}
+                      className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md"
+                      required
+                    />
+                    {field.id === 'password' && (
+                      <p className="mt-2 text-xs text-gray-600 italic">
+                        This will create a user account for you. You can log into your account using your email address and password to see your booking.
+                      </p>
+                    )}
+                  </div>
+                ))}
+                {error && <p className="text-red-600 text-sm font-medium bg-red-50 p-2 rounded-lg">{error}</p>}
+              </form>
+            </div>
+          </div>
         </div>
-        <div>
-          <label>Email:</label><br />
-          <input type="email" name="email" value={formData.email} onChange={handleChange} required />
+      ) : (
+        // Booking Confirmation Section
+        <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-2xl border border-gray-100">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Paris Luxury Transfers</h1>
+            <h2 className="text-2xl font-semibold text-gray-800 mt-2">Booking Confirmation</h2>
+            <p className="text-sm text-gray-600 mt-1">Reservation Confirmed on {new Date().toLocaleDateString()}</p>
+          </div>
+
+          <div className="space-y-8">
+            {/* Trip Details */}
+            <div className="bg-gray-50 p-6 rounded-lg shadow-inner">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">Trip Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                <p><span className="font-medium">Trip Type:</span> {bookingDetails.tripType.charAt(0).toUpperCase() + bookingDetails.tripType.slice(1)}</p>
+                <p><span className="font-medium">Pick Up Location:</span> {bookingDetails.pickupLocation}</p>
+                <p><span className="font-medium">Drop Off Location:</span> {bookingDetails.dropOffLocation}</p>
+                <p><span className="font-medium">Date:</span> {bookingDetails.date}</p>
+                <p><span className="font-medium">Time:</span> {bookingDetails.time}</p>
+                <p><span className="font-medium">Passengers:</span> {bookingDetails.passengers}</p>
+                <p><span className="font-medium">Hand Baggage:</span> {bookingDetails.handBaggage}</p>
+                <p><span className="font-medium">Checked Baggage:</span> {bookingDetails.checkedBaggage}</p>
+                {(bookingDetails.tripType === 'arrival' || bookingDetails.tripType === 'roundTrip') && (
+                  <>
+                    <p><span className="font-medium">Arrival Date:</span> {bookingDetails.arrivalDate}</p>
+                    <p><span className="font-medium">Arrival Time:</span> {bookingDetails.arrivalTime}</p>
+                    <p><span className="font-medium">Arrival Flight:</span> {bookingDetails.arrivalFlight || 'N/A'}</p>
+                  </>
+                )}
+                {(bookingDetails.tripType === 'departure' || bookingDetails.tripType === 'roundTrip') && (
+                  <>
+                    <p><span className="font-medium">Departure Date:</span> {bookingDetails.departureDate}</p>
+                    <p><span className="font-medium">Departure Time:</span> {bookingDetails.departureTime}</p>
+                    <p><span className="font-medium">Departure Flight:</span> {bookingDetails.departureFlight || 'N/A'}</p>
+                  </>
+                )}
+                <p><span className="font-medium">Remarks:</span> {bookingDetails.remarks || 'None'}</p>
+              </div>
+            </div>
+
+            {/* Vehicle Details */}
+            <div className="bg-gray-50 p-6 rounded-lg shadow-inner">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">Vehicle Details</h3>
+              <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
+                <img src={selectedCar.img} alt={selectedCar.title} className="w-40 h-20 object-cover rounded-lg shadow-md border border-gray-200" />
+                <div className="text-gray-700 space-y-2 w-full">
+                  <p><span className="font-medium">Vehicle Type:</span> {selectedCar.title}</p>
+                  <p><span className="font-medium">Description:</span> {selectedCar.desc}</p>
+                  <p><span className="font-medium">Price:</span> {selectedCar.newPrice} (VAT & fees included)</p>
+                  <p><span className="font-medium">Max Passengers:</span> {selectedCar.maxPassengers}</p>
+                  <p><span className="font-medium">Max Luggage:</span> {selectedCar.maxLuggage}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Personal Details */}
+            <div className="bg-gray-50 p-6 rounded-lg shadow-inner">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">Personal Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                <p><span className="font-medium">Full Name:</span> {personalDetails.name}</p>
+                <p><span className="font-medium">Email Address:</span> {personalDetails.email}</p>
+                <p><span className="font-medium">Country:</span> {personalDetails.country}</p>
+                <p><span className="font-medium">Telephone:</span> {personalDetails.telephone}</p>
+              </div>
+            </div>
+
+            {/* Total */}
+            <div className="text-right">
+              <p className="text-sm text-gray-500">Total Amount</p>
+              <p className="text-2xl font-bold text-gray-900">{selectedCar.newPrice}</p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex justify-between items-center">
+            <button
+              onClick={() => navigate('/')}
+              className="bg-gradient-to-r from-gray-700 to-gray-900 text-white px-6 py-2 rounded-full hover:from-gray-800 hover:to-black transition-all duration-300 shadow-md hover:shadow-lg"
+            >
+              Back to Home
+            </button>
+            <button
+              onClick={handleDownloadPDF}
+              className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-6 py-2 rounded-full hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 shadow-md hover:shadow-lg"
+            >
+              Download as PDF
+            </button>
+          </div>
         </div>
-        <div>
-          <label>Date:</label><br />
-          <input type="date" name="date" value={formData.date} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Time:</label><br />
-          <input type="time" name="time" value={formData.time} onChange={handleChange} required />
-        </div>
-        <button type="submit">Confirm Reservation</button>
-      </form>
+      )}
     </div>
   );
 };
 
-export default ReservationPage;
+export default Reservation;

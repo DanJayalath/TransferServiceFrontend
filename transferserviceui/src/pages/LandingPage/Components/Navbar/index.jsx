@@ -9,7 +9,7 @@ const Navbar = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
           {/* Logo or Brand Name */}
           <div className="flex-shrink-0">
             <Link to="/" className="text-xl font-bold text-gray-800">
-              MyBrand
+            Paris Easy Move
             </Link>
           </div>
 
