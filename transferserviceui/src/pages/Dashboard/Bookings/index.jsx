@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 // Import Inter font (you can add this in your index.html or CSS)
@@ -10,79 +10,67 @@ const interFontLink = (
 );
 
 export default function Bookings() {
-  // Sample data for bookings (now mutable for updates)
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      client: { name: "John Doe", email: "john.doe@example.com", phone: "123-456-7890", country: "USA" },
-      tripType: "One-Way",
-      pickUp: "CDG Airport",
-      destination: "Paris Hotels",
-      flightDetails: { arrivalDate: "2025-03-18", arrivalTime: "10:00 AM" },
-      vehicle: { category: "Sedan", model: "Toyota Camry" },
-      driver: "Michael Smith",
-      passengers: 2,
-      children: 1,
-      price: 120.5,
-      status: "Confirmed",
-      comments: "Client requested extra baggage space.",
-      refDateAndTime: "2025-03-17 14:30:00",
-    },
-    {
-      id: 2,
-      client: { name: "Emma Wilson", email: "emma.wilson@example.com", phone: "987-654-3210", country: "UK" },
-      tripType: "Round-Trip",
-      pickUp: "Orly Airport",
-      destination: "Disneyland",
-      flightDetails: { arrivalDate: "2025-03-16", arrivalTime: "08:00 AM" },
-      vehicle: { category: "SUV", model: "Honda CR-V" },
-      driver: "Sarah Johnson",
-      passengers: 4,
-      children: 0,
-      price: 200.0,
-      status: "Pending to Confirm",
-      comments: "Client may need a child seat.",
-      refDateAndTime: "2025-03-15 09:00:00",
-    },
-    {
-      id: 3,
-      client: { name: "Liam Brown", email: "liam.brown@example.com", phone: "555-123-4567", country: "Canada" },
-      tripType: "One-Way",
-      pickUp: "Paris City",
-      destination: "CDG Airport",
-      flightDetails: { departureDate: "2025-03-14", departureTime: "02:00 PM" },
-      vehicle: { category: "Van", model: "Ford Transit" },
-      driver: "David Lee",
-      passengers: 6,
-      children: 2,
-      price: 180.0,
-      status: "Completed",
-      comments: "",
-      refDateAndTime: "2025-03-13 16:00:00",
-    },
-    {
-      id: 4,
-      client: { name: "Sophie Turner", email: "sophie.turner@example.com", phone: "444-555-6666", country: "France" },
-      tripType: "One-Way",
-      pickUp: "Disneyland",
-      destination: "Paris City",
-      flightDetails: { arrivalDate: "2025-03-19", arrivalTime: "11:00 AM" },
-      vehicle: { category: "Sedan", model: "Nissan Altima" },
-      driver: "Claire Evans",
-      passengers: 3,
-      children: 1,
-      price: 150.0,
-      status: "Pending to Confirm",
-      comments: "Client prefers a non-smoking vehicle.",
-      refDateAndTime: "2025-03-19 08:00:00",
-    },
-  ]);
+  const BOOKINGS_API_URL = "https://localhost:7299/api/Bookings";
 
-  // State for selected tab and selected booking
+  // State for bookings, selected tab, and selected booking
+  const [bookings, setBookings] = useState([]);
   const [selectedTab, setSelectedTab] = useState("Confirmed");
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [editedPrice, setEditedPrice] = useState(null);
   const [editedStatus, setEditedStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Fetch bookings from the API
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(BOOKINGS_API_URL);
+        if (!response.ok) throw new Error("Failed to fetch bookings");
+        const data = await response.json();
+
+        // Map the API data to the format expected by the component
+        const mappedBookings = data.map(booking => ({
+          id: booking.id,
+          client: {
+            name: booking.name,
+            email: booking.email,
+            phone: booking.telephone,
+            country: booking.country,
+          },
+          tripType: booking.tripType.charAt(0).toUpperCase() + booking.tripType.slice(1),
+          pickUp: booking.pickupLocation,
+          destination: booking.dropOffLocation,
+          flightDetails: {
+            arrivalDate: booking.arrivalDateTime ? new Date(booking.arrivalDateTime).toLocaleDateString() : null,
+            arrivalTime: booking.arrivalDateTime ? new Date(booking.arrivalDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null,
+            departureDate: booking.departureDateTime ? new Date(booking.departureDateTime).toLocaleDateString() : null,
+            departureTime: booking.departureDateTime ? new Date(booking.departureDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null,
+          },
+          vehicle: {
+            category: booking.vehicleCategory,
+            model: booking.vehicleModel,
+          },
+          driver: "TBD", // Placeholder; update if driver info is available
+          passengers: booking.passengers,
+          children: 0, // Placeholder; update if child info is available
+          price: booking.totalPrice,
+          status: booking.status,
+          comments: booking.remarks || "",
+          refDateAndTime: new Date(booking.createdAt).toISOString(),
+        }));
+
+        setBookings(mappedBookings);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
 
   // Filter bookings for "New Bookings" (Pending to Confirm only)
   const newBookings = bookings
@@ -95,25 +83,48 @@ export default function Bookings() {
     .sort((a, b) => new Date(b.refDateAndTime) - new Date(a.refDateAndTime));
 
   // Handle saving changes to price and status
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (selectedBooking) {
-      const updatedBookings = bookings.map((booking) =>
-        booking.id === selectedBooking.id
-          ? {
-              ...booking,
-              price: editedPrice !== null ? parseFloat(editedPrice) : booking.price,
-              status: editedStatus || booking.status,
-            }
-          : booking
-      );
-      setBookings(updatedBookings);
-      setSelectedBooking({
-        ...selectedBooking,
-        price: editedPrice !== null ? parseFloat(editedPrice) : selectedBooking.price,
-        status: editedStatus || selectedBooking.status,
-      });
-      setEditedPrice(null);
-      setEditedStatus(null);
+      try {
+        const updatedBooking = {
+          totalPrice: parseFloat(editedPrice),
+          status: editedStatus || selectedBooking.status,
+        };
+
+        const response = await fetch(`${BOOKINGS_API_URL}/${selectedBooking.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updatedBooking),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update booking');
+        }
+
+        // Update the local state
+        const updatedBookings = bookings.map((booking) =>
+          booking.id === selectedBooking.id
+            ? {
+                ...booking,
+                price: parseFloat(editedPrice),
+                status: editedStatus || booking.status,
+              }
+            : booking
+        );
+        setBookings(updatedBookings);
+        setSelectedBooking({
+          ...selectedBooking,
+          price: parseFloat(editedPrice),
+          status: editedStatus || selectedBooking.status,
+        });
+        setEditedPrice(null);
+        setEditedStatus(null);
+        setError('');
+      } catch (err) {
+        setError(err.message);
+      }
     }
   };
 
@@ -121,11 +132,20 @@ export default function Bookings() {
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
       <h1 className="text-2xl font-semibold text-gray-800 mb-6">Bookings</h1>
 
+      {error && (
+        <div className="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-md">
+          <p className="font-bold text-lg">🚨 Error</p>
+          <p>{error}</p>
+        </div>
+      )}
+
       {/* Section 1: New Bookings (Pending to Confirm only) */}
       <div className="mb-10">
         <h2 className="text-xl font-semibold text-gray-800 mb-5">New Bookings</h2>
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-          {newBookings.length > 0 ? (
+          {loading ? (
+            <p className="p-6 text-gray-600 text-center">Loading bookings...</p>
+          ) : newBookings.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead>
@@ -225,7 +245,13 @@ export default function Bookings() {
                 </tr>
               </thead>
               <tbody>
-                {filteredBookings.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan="8" className="p-6 text-gray-600 text-center">
+                      Loading bookings...
+                    </td>
+                  </tr>
+                ) : filteredBookings.length > 0 ? (
                   filteredBookings.map((booking) => (
                     <tr
                       key={booking.id}
@@ -287,79 +313,131 @@ export default function Bookings() {
           </div>
         </div>
 
-        {/* Booking Details Section with Edit Options */}
+        {/* Booking Details Section with Enhanced Styling */}
         {selectedBooking && (
-          <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Booking Details (ID: {selectedBooking.id})</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <p className="text-sm text-gray-700">
-                  <span className="font-medium text-gray-900">Trip Type:</span> {selectedBooking.tripType}
-                </p>
-                <p className="text-sm text-gray-700">
-                  <span className="font-medium text-gray-900">Pick-Up:</span> {selectedBooking.pickUp}
-                </p>
-                <p className="text-sm text-gray-700">
-                  <span className="font-medium text-gray-900">Destination:</span> {selectedBooking.destination}
-                </p>
-                <p className="text-sm text-gray-700">
-                  <span className="font-medium text-gray-900">Arrival Date & Time:</span>{" "}
-                  {selectedBooking.flightDetails.arrivalDate} at {selectedBooking.flightDetails.arrivalTime}
-                </p>
-                {selectedBooking.flightDetails.departureDate && (
+          <div className="mt-8 bg-white border border-gray-200 rounded-xl shadow-lg p-8 transform transition-all duration-300 hover:shadow-xl">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6 border-b-2 border-blue-500 pb-2 inline-block tracking-tight">
+              Booking Details (ID: {selectedBooking.id})
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left Column: Trip Information */}
+              <div className="space-y-4 bg-gray-50 p-6 rounded-lg shadow-inner">
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-600 text-lg">🗺️</span>
                   <p className="text-sm text-gray-700">
-                    <span className="font-medium text-gray-900">Departure Date & Time:</span>{" "}
-                    {selectedBooking.flightDetails.departureDate} at {selectedBooking.flightDetails.departureTime}
+                    <span className="font-semibold text-gray-900">Trip Type:</span>{" "}
+                    <span className="text-gray-800">{selectedBooking.tripType}</span>
                   </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-600 text-lg">📍</span>
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold text-gray-900">Pick-Up:</span>{" "}
+                    <span className="text-gray-800">{selectedBooking.pickUp}</span>
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-600 text-lg">🏁</span>
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold text-gray-900">Destination:</span>{" "}
+                    <span className="text-gray-800">{selectedBooking.destination}</span>
+                  </p>
+                </div>
+                {selectedBooking.flightDetails.arrivalDate && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-blue-600 text-lg">🛬</span>
+                    <p className="text-sm text-gray-700">
+                      <span className="font-semibold text-gray-900">Arrival Date & Time:</span>{" "}
+                      <span className="text-gray-800">
+                        {selectedBooking.flightDetails.arrivalDate} at {selectedBooking.flightDetails.arrivalTime}
+                      </span>
+                    </p>
+                  </div>
+                )}
+                {selectedBooking.flightDetails.departureDate && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-blue-600 text-lg">🛫</span>
+                    <p className="text-sm text-gray-700">
+                      <span className="font-semibold text-gray-900">Departure Date & Time:</span>{" "}
+                      <span className="text-gray-800">
+                        {selectedBooking.flightDetails.departureDate} at {selectedBooking.flightDetails.departureTime}
+                      </span>
+                    </p>
+                  </div>
                 )}
               </div>
-              <div className="space-y-3">
-                <p className="text-sm text-gray-700">
-                  <span className="font-medium text-gray-900">Vehicle:</span> {selectedBooking.vehicle.category} -{" "}
-                  {selectedBooking.vehicle.model}
-                </p>
-                <p className="text-sm text-gray-700">
-                  <span className="font-medium text-gray-900">Driver:</span> {selectedBooking.driver}
-                </p>
-                <p className="text-sm text-gray-700">
-                  <span className="font-medium text-gray-900">Passengers:</span> {selectedBooking.passengers} (Children:{" "}
-                  {selectedBooking.children})
-                </p>
+
+              {/* Right Column: Vehicle and Edit Options */}
+              <div className="space-y-4 bg-gray-50 p-6 rounded-lg shadow-inner">
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-600 text-lg">🚗</span>
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold text-gray-900">Vehicle:</span>{" "}
+                    <span className="text-gray-800">
+                      {selectedBooking.vehicle.category} - {selectedBooking.vehicle.model}
+                    </span>
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-600 text-lg">👤</span>
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold text-gray-900">Driver:</span>{" "}
+                    <span className="text-gray-800">{selectedBooking.driver}</span>
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-600 text-lg">👥</span>
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold text-gray-900">Passengers:</span>{" "}
+                    <span className="text-gray-800">
+                      {selectedBooking.passengers} (Children: {selectedBooking.children})
+                    </span>
+                  </p>
+                </div>
                 {/* Editable Price */}
-                <div className="text-sm text-gray-700">
-                  <span className="font-medium text-gray-900">Price:</span>{" "}
-                  <input
-                    type="number"
-                    value={editedPrice !== null ? editedPrice : selectedBooking.price}
-                    onChange={(e) => setEditedPrice(e.target.value)}
-                    className="ml-2 p-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    step="0.01"
-                  />
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-600 text-lg">💰</span>
+                  <div className="text-sm text-gray-700 flex-1">
+                    <span className="font-semibold text-gray-900">Price:</span>{" "}
+                    <input
+                      type="number"
+                      value={editedPrice !== null ? editedPrice : selectedBooking.price}
+                      onChange={(e) => setEditedPrice(e.target.value)}
+                      className="ml-2 p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 w-32 shadow-sm hover:shadow-md"
+                      step="0.01"
+                    />
+                  </div>
                 </div>
                 {/* Editable Status */}
-                <div className="text-sm text-gray-700">
-                  <span className="font-medium text-gray-900">Status:</span>{" "}
-                  <select
-                    value={editedStatus || selectedBooking.status}
-                    onChange={(e) => setEditedStatus(e.target.value)}
-                    className="ml-2 p-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="Confirmed">Confirmed</option>
-                    <option value="Pending to Confirm">Pending to Confirm</option>
-                    <option value="Completed">Completed</option>
-                  </select>
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-600 text-lg">📊</span>
+                  <div className="text-sm text-gray-700 flex-1">
+                    <span className="font-semibold text-gray-900">Status:</span>{" "}
+                    <select
+                      value={editedStatus || selectedBooking.status}
+                      onChange={(e) => setEditedStatus(e.target.value)}
+                      className="ml-2 p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 w-48 shadow-sm hover:shadow-md"
+                    >
+                      <option value="Pending to Confirm">Pending to Confirm</option>
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                  </div>
                 </div>
                 {(selectedBooking.status === "Confirmed" || selectedBooking.status === "Pending to Confirm") &&
                   selectedBooking.comments && (
-                    <p className="text-sm text-gray-700">
-                      <span className="font-medium text-gray-900">Adjustments:</span>{" "}
-                      <span className="italic">{selectedBooking.comments}</span>
-                    </p>
+                    <div className="flex items-start space-x-2">
+                      <span className="text-blue-600 text-lg">📝</span>
+                      <p className="text-sm text-gray-700">
+                        <span className="font-semibold text-gray-900">Adjustments:</span>{" "}
+                        <span className="text-gray-600 italic">{selectedBooking.comments}</span>
+                      </p>
+                    </div>
                   )}
                 {/* Save Button */}
                 <button
                   onClick={handleSaveChanges}
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  className="mt-6 px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
                 >
                   Save Changes
                 </button>
