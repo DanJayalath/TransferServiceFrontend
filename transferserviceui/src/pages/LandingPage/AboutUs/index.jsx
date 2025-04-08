@@ -1,29 +1,84 @@
+import React from "react";
 
 const AboutUs = () => {
-    return (
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center">
-          {/* Left Side: Text Content */}
-          <div className="md:w-1/2 text-center md:text-left">
-            <h2 className="text-3xl font-bold mb-4">About Us</h2>
-            <p className="text-gray-600 mb-6">
-              At LIMO5, we are dedicated to providing top-notch luxury limousine services for all your travel needs. With years of experience in the industry, our mission is to deliver comfort, style, and reliability to every client. Whether it's a special event, business trip, or airport transfer, our professional drivers and premium fleet ensure a seamless and unforgettable experience.
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans">
+      {/* Header with Negative Margin */}
+      <header className="bg-gray-800 text-white py-8 px-6 shadow-lg rounded-b-xl -mt-[25px]">
+      <div className="max-w-7xl mx-auto text-center">
+  <h1 className="text-4xl font-bold tracking-tight">About Us</h1>
+  <p className="mt-2 text-lg opacity-90">
+    Discover who we are and what drives us.
+  </p>
+</div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+        {/* Company Overview */}
+        <section className="bg-white rounded-2xl shadow-xl p-10 border border-gray-100 mb-12">
+          <h2 className="text-3xl font-semibold text-gray-900 mb-6 tracking-tight">
+            Our Story
+          </h2>
+          <p className="text-gray-700 text-lg leading-relaxed">
+            Paris Easy Move was founded in 2020 with a vision to simplify
+            navigation and exploration in the beautiful city of Paris. We began
+            as a small team passionate about technology and travel, aiming to
+            provide innovative tools like real-time traffic updates and
+            immersive street views. Today, we’re a growing company dedicated to
+            enhancing your Parisian experience with cutting-edge solutions.
+          </p>
+          <p className="text-gray-700 text-lg leading-relaxed mt-6">
+            Our commitment to excellence drives us to continuously improve our
+            services, ensuring that locals and tourists alike can move through
+            Paris with ease and confidence.
+          </p>
+        </section>
+
+        {/* Mission and Vision */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight">
+              Our Mission
+            </h2>
+            <p className="text-gray-700 text-lg leading-relaxed">
+              To empower people with intuitive, reliable, and innovative tools
+              that make navigating Paris seamless, enjoyable, and efficient.
             </p>
-            <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-              Learn More
-            </button>
           </div>
-          {/* Right Side: Image */}
-          <div className="md:w-1/2 mt-6 md:mt-0">
-            <img
-              src="https://via.placeholder.com/500x300"
-              alt="About Us"
-              className="w-full rounded-lg shadow-lg"
-            />
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tight">
+              Our Vision
+            </h2>
+            <p className="text-gray-700 text-lg leading-relaxed">
+              To be the leading provider of navigation and exploration solutions
+              in Paris, blending technology with the city’s rich culture and
+              history.
+            </p>
           </div>
-        </div>
-      </section>
-    );
-  };
-  
-  export default AboutUs;
+        </section>
+
+        {/* Call to Action */}
+        <section className="text-center bg-gradient-to-r from-gray-800 to-gray-900 text-white py-16 px-8 rounded-2xl shadow-xl">
+          <h2 className="text-3xl font-semibold mb-6 tracking-tight">
+            Ready to Explore Paris with Us?
+          </h2>
+          <p className="text-gray-200 text-lg mb-8 max-w-3xl mx-auto leading-relaxed">
+            Join thousands of users who trust Paris Easy Move for their
+            navigation needs. Contact us or try our tools today!
+          </p>
+          <div className="flex justify-center space-x-6">
+            <a
+              href="/contact-us"
+              className="inline-block bg-white text-gray-800 py-4 px-8 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              Contact Us
+            </a>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+};
+
+export default AboutUs;

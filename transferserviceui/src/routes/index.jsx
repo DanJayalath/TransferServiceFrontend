@@ -8,6 +8,8 @@ import AboutUs from '../pages/LandingPage/AboutUs';
 import ContactUs from "../pages/LandingPage/ContactUs";
 import Reservation from "../pages/LandingPage/Reservation";
 import AIAssistant from "../pages/LandingPage/AIAssistant";
+import StreetView from "../pages/LandingPage/StreetView";
+import TrafficInfo from "../pages/LandingPage/TrafficInfo";
 import Login from '../pages/LandingPage/UserProfile';
 import UserProfile from '../pages/LandingPage/UserProfile/UserProfile';
 import LocationCategories from '../pages/Dashboard/LocationCategories'; 
@@ -30,6 +32,8 @@ const AppRoutes = () => {
          <Route path="userProfile" element={<UserProfile />} />
          <Route path="AboutUs" element={<AboutUs />} />
          <Route path="ContactUs" element={<ContactUs />} />
+         <Route path="StreetView" element={<StreetView />} />
+         <Route path="TrafficInfo" element={<TrafficInfo />} />
          <Route path="Reservation" element={<Reservation />} />
          <Route path="AIAssistant" element={<AIAssistant />} />
           {/*  <Route path="contact-us" element={<ContactUs />} />

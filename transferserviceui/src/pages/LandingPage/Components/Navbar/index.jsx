@@ -24,11 +24,12 @@ const Navbar = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
             <Link to="/ContactUs" className="text-black hover:scale-110 transition-transform duration-300">
               Contact
             </Link>
-            {/* Book Now button with Link */}
-            <Link to="/Reservation">
-              <button className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 hover:scale-110 transition-all duration-300">
-                Book Now
-              </button>
+            <Link to="/StreetView" className="text-black hover:scale-110 transition-transform duration-300">
+              Street View
+            </Link>
+            {/* Added Traffic Info Link */}
+            <Link to="/TrafficInfo" className="text-black hover:scale-110 transition-transform duration-300">
+              Traffic Info
             </Link>
           </div>
 
@@ -132,11 +133,20 @@ const Navbar = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
             >
               Contact
             </Link>
-            {/* Book Now button with Link for mobile */}
-            <Link to="/Reservation" onClick={onToggleMobileMenu}>
-              <button className="w-full bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 hover:scale-110 transition-all duration-300">
-                Book Now
-              </button>
+            <Link
+              to="/StreetView"
+              className="block text-black hover:scale-110 transition-transform duration-300"
+              onClick={onToggleMobileMenu}
+            >
+              Street View
+            </Link>
+            {/* Added Traffic Info Link for Mobile */}
+            <Link
+              to="/TrafficInfo"
+              className="block text-black hover:scale-110 transition-transform duration-300"
+              onClick={onToggleMobileMenu}
+            >
+              Traffic Info
             </Link>
             <Link
               to="/AIAssistant"

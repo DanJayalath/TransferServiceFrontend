@@ -1,38 +1,11 @@
-// src/Components/TravelPromptAssistant.jsx
 import React, { useState, useEffect } from 'react';
-import { FaPlane, FaLandmark, FaPalette, FaShoppingBag, FaUtensils, FaCamera } from 'react-icons/fa'; // Import icons for stickers
+import { FaPlane, FaLandmark, FaPalette, FaShoppingBag, FaUtensils, FaCamera } from 'react-icons/fa';
 
 const TravelPromptAssistant = () => {
-  // Categories and locations data
-  const categories = {
-    Airports: [
-      { name: 'Charles de Gaulle Airport (CDG)', description: 'Largest international airport in France, 23 km northeast of Paris.' },
-      { name: 'Orly Airport (ORY)', description: 'Second major airport, located south of Paris.' },
-      { name: 'Beauvais-Tille Airport (BVA)', description: 'Smaller airport, often used by budget airlines, 85 km north of Paris.' },
-    ],
-    Landmarks: [
-      { name: 'Eiffel Tower', description: 'Iconic Parisian landmark with stunning views.' },
-      { name: 'Notre-Dame Cathedral', description: 'Historic cathedral, recently reopened after the 2019 fire.' },
-      { name: 'Arc de Triomphe', description: 'Monument at the end of Champs-Élysées with panoramic views.' },
-      { name: 'Sacré-Cœur Basilica', description: 'Stunning basilica in Montmartre with city views.' },
-    ],
-    Museums: [
-      { name: 'Louvre Museum', description: 'World-famous museum housing the Mona Lisa.' },
-      { name: 'Musée d’Orsay', description: 'Impressionist art in a former railway station.' },
-      { name: 'Centre Pompidou', description: 'Modern art museum with a unique architectural design.' },
-      { name: 'Rodin Museum', description: 'Features Auguste Rodin’s sculptures like The Thinker.' },
-    ],
-    Markets: [
-      { name: 'Marché des Enfants Rouges', description: 'Oldest covered market in Le Marais.' },
-      { name: 'Puces de Saint-Ouen', description: 'Largest flea market in the world, great for antiques.' },
-      { name: 'Marché Saint-Germain', description: 'Hidden gem market with superb coffee and wine.' },
-    ],
-    Gardens: [
-      { name: 'Tuileries Garden', description: 'Historic garden between the Louvre and Place de la Concorde.' },
-      { name: 'Luxembourg Gardens', description: 'Beautiful gardens with activities for kids.' },
-      { name: 'Parc de Belleville', description: 'Hilly park with panoramic views of Paris.' },
-    ],
-  };
+  // State for fetched categories and locations
+  const [categories, setCategories] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Special things to do in Paris (stickers)
   const activities = [
@@ -51,7 +24,36 @@ const TravelPromptAssistant = () => {
   const [selectedActivity, setSelectedActivity] = useState('');
   const [prompt, setPrompt] = useState('');
   const [result, setResult] = useState('');
-  const [displayedResult, setDisplayedResult] = useState(''); // For typing animation
+  const [displayedResult, setDisplayedResult] = useState('');
+
+  // Fetch data from API
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await fetch('https://localhost:7299/api/Locations');
+        if (!response.ok) throw new Error('Failed to fetch locations');
+        const data = await response.json();
+
+        // Transform API data into categories object
+        const groupedCategories = data.reduce((acc, location) => {
+          const categoryName = location.locationCategory.name;
+          if (!acc[categoryName]) {
+            acc[categoryName] = [];
+          }
+          acc[categoryName].push({ name: location.name, description: `${location.name} in ${categoryName}` });
+          return acc;
+        }, {});
+
+        setCategories(groupedCategories);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchLocations();
+  }, []);
 
   // Update prompt in real-time when selections change
   useEffect(() => {
@@ -65,7 +67,7 @@ const TravelPromptAssistant = () => {
   // Typing animation for result
   useEffect(() => {
     if (result) {
-      setDisplayedResult(''); // Reset displayed result
+      setDisplayedResult('');
       let index = 0;
       const interval = setInterval(() => {
         if (index < result.length) {
@@ -74,12 +76,12 @@ const TravelPromptAssistant = () => {
         } else {
           clearInterval(interval);
         }
-      }, 20); // Adjust speed of typing (20ms per character)
+      }, 20);
       return () => clearInterval(interval);
     }
   }, [result]);
 
-  // Handle "Assist" button click to generate the prompt result and clear the prompt box
+  // Handle "Assist" button click
   const handleAssist = () => {
     if (!fromLocation || !toLocation || !selectedActivity) {
       setResult('Please select a "From" location, a "To" location, and an activity.');
@@ -89,8 +91,7 @@ const TravelPromptAssistant = () => {
     const generatedPrompt = `From ${fromLocation} to ${toLocation}, I want to ${selectedActivity.toLowerCase()}.`;
     setPrompt(generatedPrompt);
 
-    // Simulate a response (replace with actual logic or API call if needed)
-    const response = `Here's a plan for your trip:\n\nStart at **${fromLocation}**. If you're at an airport like Charles de Gaulle, you can use the RER train or a taxi to head into the city (fares from CDG to central Paris are around €56-€65). If you're at a landmark or museum, you're likely already in the heart of Paris.\n\nNext, make your way to **${toLocation}**. If you're traveling between landmarks or museums, walking or the Metro is ideal—buy a carnet of 10 tickets for convenience. For example, from the Eiffel Tower to the Louvre, it's a scenic 30-minute walk along the Seine, or a quick Metro ride on Line 6 to Line 1.\n\nWhile traveling, enjoy your selected activity: **${selectedActivity}**. ${getActivityDetails(selectedActivity)}\n\nEnjoy your time in Paris!`;
+    const response = `Here's a plan for your trip:\n\nStart at **${fromLocation}**. If you're at an airport like Charles de Gaulle, you can use the RER train or a taxi to head into the city (fares from CDG to central Paris are around €56-€65). If you're at a landmark or museum, you're likely already in the heart of Paris.\n\nNext, make your way to **${toLocation}**. If you're traveling between landmarks or museums, walking or the Metro is ideal—buy a carnet of 10 tickets for convenience.\n\nWhile traveling, enjoy your selected activity: **${selectedActivity}**. ${getActivityDetails(selectedActivity)}\n\nEnjoy your time in Paris!`;
     setResult(response);
 
     // Clear the prompt box and selections
@@ -106,26 +107,28 @@ const TravelPromptAssistant = () => {
   const getActivityDetails = (activity) => {
     switch (activity) {
       case 'Seine River Cruise':
-        return 'Book a one-hour cruise with Bateaux Parisiens or Bateaux Mouches, starting near the Eiffel Tower. You’ll pass Notre-Dame, Musée d’Orsay, and charming quaysides—perfect for photos!';
+        return 'Book a one-hour cruise with Bateaux Parisiens or Bateaux Mouches, starting near the Eiffel Tower.';
       case 'Dine at a Michelin-Starred Restaurant':
-        return 'Try Septime in the 11th arrondissement for a seven-course tasting menu (€135). Book early, as reservations can fill up a year in advance. Pair your meal with their curated wine selection (€75).';
+        return 'Try Septime in the 11th arrondissement for a seven-course tasting menu (€135).';
       case 'Visit a Flea Market':
-        return 'Head to Puces de Saint-Ouen, open Friday to Monday. Browse vintage Chanel, antique books, and more. Stay for lunch at a local bistro like Le Pericole for an authentic experience.';
+        return 'Head to Puces de Saint-Ouen, open Friday to Monday.';
       case 'Explore Montmartre':
-        return 'Wander the cobblestone streets, visit Sacré-Cœur Basilica for panoramic views, and enjoy a café au lait at a sidewalk bistro. Don’t miss Place du Tertre for local artists.';
+        return 'Wander the cobblestone streets and visit Sacré-Cœur Basilica.';
       case 'Attend a Candlelight Concert':
-        return 'Experience a unique concert at venues like Saint-Eustache, featuring music from Vivaldi to Taylor Swift, illuminated by candlelight. Check schedules at saintdenys.net or sfx-paris.fr.';
+        return 'Experience a unique concert at venues like Saint-Eustache.';
       default:
         return '';
     }
   };
 
+  if (loading) return <div className="text-center py-16">Loading...</div>;
+  if (error) return <div className="text-center py-16 text-red-500">Error: {error}</div>;
+
   return (
     <section className="py-16 bg-gray-100 w-full px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        {/* Heading */}
         <h2 className="text-3xl font-bold text-black text-center mb-8">
-          Plan Your Paris Adventure Our AI Assistant
+          Plan Your Paris Adventure with Our AI Assistant
         </h2>
 
         {/* Dropdowns for From and To */}
@@ -138,7 +141,7 @@ const TravelPromptAssistant = () => {
               value={fromCategory}
               onChange={(e) => {
                 setFromCategory(e.target.value);
-                setFromLocation(''); // Reset location when category changes
+                setFromLocation('');
               }}
             >
               <option value="">Select Category</option>
@@ -172,7 +175,7 @@ const TravelPromptAssistant = () => {
               value={toCategory}
               onChange={(e) => {
                 setToCategory(e.target.value);
-                setToLocation(''); // Reset location when category changes
+                setToLocation('');
               }}
             >
               <option value="">Select Category</option>
@@ -238,7 +241,7 @@ const TravelPromptAssistant = () => {
           </div>
         </div>
 
-        {/* Result Display (ChatGPT-like with typing animation) */}
+        {/* Result Display */}
         {displayedResult && (
           <div className="bg-gray-200 border border-gray-400 rounded-lg p-6">
             <h3 className="text-xl font-semibold text-black mb-4">Your Travel Plan</h3>
