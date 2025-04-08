@@ -41,9 +41,7 @@ const Header = () => {
           <button className="bg-gray-800 text-white px-6 py-2 rounded-full hover:bg-gray-700 hover:shadow-lg transition duration-200 shadow-md">
             ABOUT MORE →
           </button>
-          <button className="bg-gray-900/50 border border-gray-600 text-white px-6 py-2 rounded-full hover:bg-gray-800 hover:text-gray-100 hover:shadow-lg transition duration-200 shadow-md">
-            LEARN MORE →
-          </button>
+
         </div>
       </div>
 

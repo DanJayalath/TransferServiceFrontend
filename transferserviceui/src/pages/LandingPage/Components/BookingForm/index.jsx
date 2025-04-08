@@ -1,49 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const BookingForm = () => {
-  // Static data for Pick Up and Drop Off Locations (categorized)
-  const locationData = [
-    {
-      category: "Airports",
-      items: [
-        "Paris Charles de Gaulle Airport",
-        "Paris Orly Airport",
-        "Lyon-Saint Exupéry Airport",
-      ],
-    },
-    {
-      category: "Train Stations",
-      items: [
-        "Gare du Nord",
-        "Gare de Lyon",
-        "Gare Montparnasse",
-        "Gare de l'Est",
-      ],
-    },
-    {
-      category: "Hotels",
-      items: [
-        "Hilton Paris Opera",
-        "Le Meurice",
-        "Four Seasons Hotel George V",
-        "Shangri-La Hotel Paris",
-      ],
-    },
-    {
-      category: "Landmarks",
-      items: [
-        "Eiffel Tower",
-        "Louvre Museum",
-        "Notre-Dame Cathedral",
-        "Arc de Triomphe",
-      ],
-    },
-  ];
-
-  // Generate options for Passengers, Hand Baggage, and Checked Baggage (1-14)
-  const numberOptions = Array.from({ length: 14 }, (_, i) => (i + 1).toString());
-
   // State to manage form values
   const [formData, setFormData] = useState({
     tripType: '',
@@ -56,7 +14,45 @@ const BookingForm = () => {
     checkedBaggage: '',
   });
 
+  // State to store fetched locations
+  const [locations, setLocations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Generate options for Passengers, Hand Baggage, and Checked Baggage (1-14)
+  const numberOptions = Array.from({ length: 14 }, (_, i) => (i + 1).toString());
+
   const navigate = useNavigate();
+
+  // Fetch locations from API on component mount
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await fetch('https://localhost:7299/api/Locations');
+        if (!response.ok) {
+          throw new Error('Failed to fetch locations');
+        }
+        const data = await response.json();
+        setLocations(data);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchLocations();
+  }, []);
+
+  // Group locations by category
+  const groupedLocations = locations.reduce((acc, location) => {
+    const categoryName = location.locationCategory.name;
+    if (!acc[categoryName]) {
+      acc[categoryName] = [];
+    }
+    acc[categoryName].push(location);
+    return acc;
+  }, {});
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -73,6 +69,15 @@ const BookingForm = () => {
     // Navigate to the Reservation component and pass the form data
     navigate('/reservation', { state: { bookingDetails: formData } });
   };
+
+  // Render loading or error state
+  if (loading) {
+    return <div className="text-gray-200">Loading locations...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-400">Error: {error}</div>;
+  }
 
   return (
     <div
@@ -123,11 +128,15 @@ const BookingForm = () => {
             <option value="" disabled>
               Select Location
             </option>
-            {locationData.map((category, index) => (
-              <optgroup key={index} label={category.category} className="bg-gray-700 text-gray-200">
-                {category.items.map((item, itemIndex) => (
-                  <option key={itemIndex} value={item} className="bg-gray-700 text-gray-200">
-                    {item}
+            {Object.entries(groupedLocations).map(([category, items]) => (
+              <optgroup key={category} label={category} className="bg-gray-700 text-gray-200">
+                {items.map((location) => (
+                  <option
+                    key={location.id}
+                    value={location.name}
+                    className="bg-gray-700 text-gray-200"
+                  >
+                    {location.name}
                   </option>
                 ))}
               </optgroup>
@@ -150,11 +159,15 @@ const BookingForm = () => {
             <option value="" disabled>
               Select Location
             </option>
-            {locationData.map((category, index) => (
-              <optgroup key={index} label={category.category} className="bg-gray-700 text-gray-200">
-                {category.items.map((item, itemIndex) => (
-                  <option key={itemIndex} value={item} className="bg-gray-700 text-gray-200">
-                    {item}
+            {Object.entries(groupedLocations).map(([category, items]) => (
+              <optgroup key={category} label={category} className="bg-gray-700 text-gray-200">
+                {items.map((location) => (
+                  <option
+                    key={location.id}
+                    value={location.name}
+                    className="bg-gray-700 text-gray-200"
+                  >
+                    {location.name}
                   </option>
                 ))}
               </optgroup>
