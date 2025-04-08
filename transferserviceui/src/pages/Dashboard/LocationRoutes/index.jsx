@@ -47,7 +47,6 @@ export default function Runways() {
     e.preventDefault();
     if (!runwayName.trim() || !fromLocationId || !toLocationId || prices.every((price) => !price.trim())) return;
 
-    // Base runway data without the id
     const runwayData = {
       runwayName,
       fromLocationId: parseInt(fromLocationId),
@@ -68,7 +67,6 @@ export default function Runways() {
       pax14Price: parseFloat(prices[13]) || 0,
     };
 
-    // Add id only if editing
     if (editId) {
       runwayData.id = editId;
     }
@@ -172,6 +170,16 @@ export default function Runways() {
     return location ? location.name : "Unknown";
   };
 
+  // Group locations by category
+  const groupedLocations = locations.reduce((acc, location) => {
+    const categoryName = location.locationCategory.name;
+    if (!acc[categoryName]) {
+      acc[categoryName] = [];
+    }
+    acc[categoryName].push(location);
+    return acc;
+  }, {});
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto">
@@ -204,10 +212,14 @@ export default function Runways() {
                 <option value="" disabled>
                   From Location
                 </option>
-                {locations.map((location) => (
-                  <option key={location.id} value={location.id}>
-                    {location.name}
-                  </option>
+                {Object.entries(groupedLocations).map(([category, locs]) => (
+                  <optgroup key={category} label={category}>
+                    {locs.map((location) => (
+                      <option key={location.id} value={location.id}>
+                        {location.name}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
               <select
@@ -218,10 +230,14 @@ export default function Runways() {
                 <option value="" disabled>
                   To Location
                 </option>
-                {locations.map((location) => (
-                  <option key={location.id} value={location.id}>
-                    {location.name}
-                  </option>
+                {Object.entries(groupedLocations).map(([category, locs]) => (
+                  <optgroup key={category} label={category}>
+                    {locs.map((location) => (
+                      <option key={location.id} value={location.id}>
+                        {location.name}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>

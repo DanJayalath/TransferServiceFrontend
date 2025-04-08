@@ -24,9 +24,12 @@ const Navbar = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
             <Link to="/ContactUs" className="text-black hover:scale-110 transition-transform duration-300">
               Contact
             </Link>
-            <button className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 hover:scale-110 transition-all duration-300">
-              Book Now
-            </button>
+            {/* Book Now button with Link */}
+            <Link to="/Reservation">
+              <button className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 hover:scale-110 transition-all duration-300">
+                Book Now
+              </button>
+            </Link>
           </div>
 
           {/* Right Side - AI Assistant and Sign In */}
@@ -129,11 +132,14 @@ const Navbar = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
             >
               Contact
             </Link>
-            <button className="w-full bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 hover:scale-110 transition-all duration-300">
-              Book Now
-            </button>
+            {/* Book Now button with Link for mobile */}
+            <Link to="/Reservation" onClick={onToggleMobileMenu}>
+              <button className="w-full bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 hover:scale-110 transition-all duration-300">
+                Book Now
+              </button>
+            </Link>
             <Link
-              to="/ai-assistant"
+              to="/AIAssistant"
               className="block text-black font-bold hover:text-gray-700 transition duration-300 relative font-futura tracking-wide hover:shadow-[0_0_8px_rgba(0,0,0,0.3)] hover:border hover:border-purple-600 hover:rounded-lg hover:px-2 hover:py-1"
               onClick={onToggleMobileMenu}
             >

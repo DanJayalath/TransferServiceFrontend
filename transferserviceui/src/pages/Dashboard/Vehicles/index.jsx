@@ -5,6 +5,9 @@ export default function Vehicles() {
   const [vehicleCategory, setVehicleCategory] = useState("");
   const [vehicleModel, setVehicleModel] = useState("");
   const [price, setPrice] = useState("");
+  const [maxPassengers, setMaxPassengers] = useState("");
+  const [maxLuggage, setMaxLuggage] = useState("");
+  const [carImage, setCarImage] = useState(null); // File object for new uploads
   const [vehicles, setVehicles] = useState([]);
   const [editId, setEditId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
@@ -12,9 +15,9 @@ export default function Vehicles() {
   const [error, setError] = useState(null);
 
   const API_URL = "https://localhost:7299/api/Vehicles";
-  const categories = ["Economical Car", "Luxury Car", "Mini Van", "Sport Car"];
+  const categories = ["Business Class Car", "Business Class Van", "First Class Car", "First Class Van"];
+  const numberOptions = Array.from({ length: 14 }, (_, i) => i + 1);
 
-  // Fetch all vehicles on component mount
   useEffect(() => {
     fetchVehicles();
   }, []);
@@ -33,15 +36,17 @@ export default function Vehicles() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!vehicleNo.trim() || !vehicleCategory || !vehicleModel.trim() || !price.trim()) return;
+    if (!vehicleNo.trim() || !vehicleCategory || !vehicleModel.trim() || !price.trim() || !maxPassengers || !maxLuggage) return;
 
-    const vehicleData = {
-      id: editId || 0, // 0 for new vehicles, API will generate actual ID
-      vehicleNo,
-      vehicleCategory,
-      vehicleModel,
-      price: parseFloat(price),
-    };
+    const formData = new FormData();
+    formData.append("id", editId || 0);
+    formData.append("vehicleNo", vehicleNo);
+    formData.append("vehicleCategory", vehicleCategory);
+    formData.append("vehicleModel", vehicleModel);
+    formData.append("price", price);
+    formData.append("maxPassengers", maxPassengers);
+    formData.append("maxLuggage", maxLuggage);
+    if (carImage) formData.append("carImage", carImage); // Only append if a new image is selected
 
     try {
       const method = editId ? "PUT" : "POST";
@@ -49,15 +54,12 @@ export default function Vehicles() {
 
       const response = await fetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(vehicleData),
+        body: formData, // No headers needed, FormData sets multipart/form-data automatically
       });
 
       if (!response.ok) throw new Error(`Failed to ${editId ? "update" : "add"} vehicle`);
 
-      await fetchVehicles(); // Refresh the list
+      await fetchVehicles();
       setEditId(null);
       resetForm();
       setError(null);
@@ -71,6 +73,9 @@ export default function Vehicles() {
     setVehicleCategory("");
     setVehicleModel("");
     setPrice("");
+    setMaxPassengers("");
+    setMaxLuggage("");
+    setCarImage(null);
   };
 
   const handleEdit = (vehicle) => {
@@ -79,6 +84,9 @@ export default function Vehicles() {
     setVehicleCategory(vehicle.vehicleCategory);
     setVehicleModel(vehicle.vehicleModel);
     setPrice(vehicle.price.toString());
+    setMaxPassengers(vehicle.maxPassengers.toString());
+    setMaxLuggage(vehicle.maxLuggage.toString());
+    setCarImage(null); // Reset image on edit, user must re-upload if they want to change it
   };
 
   const handleDeleteRequest = (id) => {
@@ -121,19 +129,17 @@ export default function Vehicles() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">Vehicles</h1>
 
-        {/* Error Display */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
             {error}
           </div>
         )}
 
-        {/* Form */}
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-700 mb-4">
             {editId ? "Update Vehicle" : "Add New Vehicle"}
           </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input
                 type="text"
@@ -172,6 +178,40 @@ export default function Vehicles() {
                 min="0"
                 step="0.01"
               />
+              <select
+                value={maxPassengers}
+                onChange={(e) => setMaxPassengers(e.target.value)}
+                className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+              >
+                <option value="" disabled>
+                  Max Passengers
+                </option>
+                {numberOptions.map((num) => (
+                  <option key={num} value={num}>
+                    {num}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={maxLuggage}
+                onChange={(e) => setMaxLuggage(e.target.value)}
+                className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+              >
+                <option value="" disabled>
+                  Max Luggage
+                </option>
+                {numberOptions.map((num) => (
+                  <option key={num} value={num}>
+                    {num}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setCarImage(e.target.files[0])}
+                className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+              />
             </div>
             <div className="flex gap-4">
               <button
@@ -200,7 +240,6 @@ export default function Vehicles() {
           </form>
         </div>
 
-        {/* Table */}
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
           {vehicles.length === 0 ? (
             <p className="p-6 text-gray-500 text-center">No vehicles available.</p>
@@ -255,7 +294,6 @@ export default function Vehicles() {
           )}
         </div>
 
-        {/* Delete Confirmation Modal */}
         {deleteId && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
@@ -285,7 +323,6 @@ export default function Vehicles() {
           </div>
         )}
 
-        {/* Vehicle Details Modal */}
         {detailsId && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
@@ -312,6 +349,24 @@ export default function Vehicles() {
                       <strong className="text-gray-700">Price:</strong> $
                       {parseFloat(vehicle.price).toFixed(2)}
                     </p>
+                    <p>
+                      <strong className="text-gray-700">Max Passengers:</strong>{" "}
+                      {vehicle.maxPassengers}
+                    </p>
+                    <p>
+                      <strong className="text-gray-700">Max Luggage:</strong>{" "}
+                      {vehicle.maxLuggage}
+                    </p>
+                    {vehicle.carImagePath && (
+                      <div>
+                        <strong className="text-gray-700">Car Image:</strong>
+                        <img
+                          src={`${API_URL}/images/${vehicle.carImagePath}`}
+                          alt={vehicle.vehicleNo}
+                          className="mt-2 max-w-full h-auto rounded-md"
+                        />
+                      </div>
+                    )}
                   </div>
                 );
               })()}
