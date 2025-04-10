@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { FaPlane, FaLandmark, FaPalette, FaShoppingBag, FaUtensils, FaCamera } from 'react-icons/fa';
 
 const TravelPromptAssistant = () => {
-  // State for fetched categories and locations
   const [categories, setCategories] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Special things to do in Paris (stickers)
   const activities = [
     { name: 'Seine River Cruise', icon: <FaCamera />, description: 'Cruise past iconic landmarks like Notre-Dame and the Eiffel Tower.' },
     { name: 'Dine at a Michelin-Starred Restaurant', icon: <FaUtensils />, description: 'Experience world-class French cuisine at places like Septime.' },
@@ -16,7 +14,6 @@ const TravelPromptAssistant = () => {
     { name: 'Attend a Candlelight Concert', icon: <FaPalette />, description: 'Enjoy music from Vivaldi to Taylor Swift in a unique setting.' },
   ];
 
-  // State for dropdown selections, selected activity, prompt, and result
   const [fromCategory, setFromCategory] = useState('');
   const [fromLocation, setFromLocation] = useState('');
   const [toCategory, setToCategory] = useState('');
@@ -26,7 +23,6 @@ const TravelPromptAssistant = () => {
   const [result, setResult] = useState('');
   const [displayedResult, setDisplayedResult] = useState('');
 
-  // Fetch data from API
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -34,7 +30,6 @@ const TravelPromptAssistant = () => {
         if (!response.ok) throw new Error('Failed to fetch locations');
         const data = await response.json();
 
-        // Transform API data into categories object
         const groupedCategories = data.reduce((acc, location) => {
           const categoryName = location.locationCategory.name;
           if (!acc[categoryName]) {
@@ -55,7 +50,6 @@ const TravelPromptAssistant = () => {
     fetchLocations();
   }, []);
 
-  // Update prompt in real-time when selections change
   useEffect(() => {
     let newPrompt = '';
     if (fromLocation) newPrompt += `From ${fromLocation}`;
@@ -64,7 +58,6 @@ const TravelPromptAssistant = () => {
     setPrompt(newPrompt);
   }, [fromLocation, toLocation, selectedActivity]);
 
-  // Typing animation for result
   useEffect(() => {
     if (result) {
       setDisplayedResult('');
@@ -81,8 +74,7 @@ const TravelPromptAssistant = () => {
     }
   }, [result]);
 
-  // Handle "Assist" button click
-  const handleAssist = () => {
+  const handleAssist = async () => {
     if (!fromLocation || !toLocation || !selectedActivity) {
       setResult('Please select a "From" location, a "To" location, and an activity.');
       return;
@@ -91,34 +83,29 @@ const TravelPromptAssistant = () => {
     const generatedPrompt = `From ${fromLocation} to ${toLocation}, I want to ${selectedActivity.toLowerCase()}.`;
     setPrompt(generatedPrompt);
 
-    const response = `Here's a plan for your trip:\n\nStart at **${fromLocation}**. If you're at an airport like Charles de Gaulle, you can use the RER train or a taxi to head into the city (fares from CDG to central Paris are around €56-€65). If you're at a landmark or museum, you're likely already in the heart of Paris.\n\nNext, make your way to **${toLocation}**. If you're traveling between landmarks or museums, walking or the Metro is ideal—buy a carnet of 10 tickets for convenience.\n\nWhile traveling, enjoy your selected activity: **${selectedActivity}**. ${getActivityDetails(selectedActivity)}\n\nEnjoy your time in Paris!`;
-    setResult(response);
+    try {
+      const response = await fetch('https://localhost:7299/api/GPT/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question: generatedPrompt }),
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch response from API');
+      const data = await response.json();
+      setResult(data.reply);
+    } catch (err) {
+      setResult(`Error: ${err.message}`);
+    }
 
     // Clear the prompt box and selections
     setPrompt('');
     setFromCategory('');
-    setFromLocation('');
+    setFromLocation(''); // Fixed syntax error here
     setToCategory('');
     setToLocation('');
     setSelectedActivity('');
-  };
-
-  // Helper function to provide activity details
-  const getActivityDetails = (activity) => {
-    switch (activity) {
-      case 'Seine River Cruise':
-        return 'Book a one-hour cruise with Bateaux Parisiens or Bateaux Mouches, starting near the Eiffel Tower.';
-      case 'Dine at a Michelin-Starred Restaurant':
-        return 'Try Septime in the 11th arrondissement for a seven-course tasting menu (€135).';
-      case 'Visit a Flea Market':
-        return 'Head to Puces de Saint-Ouen, open Friday to Monday.';
-      case 'Explore Montmartre':
-        return 'Wander the cobblestone streets and visit Sacré-Cœur Basilica.';
-      case 'Attend a Candlelight Concert':
-        return 'Experience a unique concert at venues like Saint-Eustache.';
-      default:
-        return '';
-    }
   };
 
   if (loading) return <div className="text-center py-16">Loading...</div>;
@@ -131,9 +118,7 @@ const TravelPromptAssistant = () => {
           Plan Your Paris Adventure with Our AI Assistant
         </h2>
 
-        {/* Dropdowns for From and To */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* From Dropdown */}
           <div>
             <label className="block text-black text-sm font-semibold mb-2">From</label>
             <select
@@ -167,7 +152,6 @@ const TravelPromptAssistant = () => {
             )}
           </div>
 
-          {/* To Dropdown */}
           <div>
             <label className="block text-black text-sm font-semibold mb-2">To</label>
             <select
@@ -202,7 +186,6 @@ const TravelPromptAssistant = () => {
           </div>
         </div>
 
-        {/* Stickers for Special Things to Do */}
         <div className="mb-8">
           <h3 className="text-xl font-semibold text-black mb-4">Special Things to Do in Paris</h3>
           <div className="flex flex-wrap gap-4">
@@ -221,7 +204,6 @@ const TravelPromptAssistant = () => {
           </div>
         </div>
 
-        {/* Prompt Input and Assist Button */}
         <div className="mb-8">
           <h3 className="text-xl font-semibold text-black mb-4">Your Travel Prompt</h3>
           <div className="flex space-x-4">
@@ -241,7 +223,6 @@ const TravelPromptAssistant = () => {
           </div>
         </div>
 
-        {/* Result Display */}
         {displayedResult && (
           <div className="bg-gray-200 border border-gray-400 rounded-lg p-6">
             <h3 className="text-xl font-semibold text-black mb-4">Your Travel Plan</h3>
