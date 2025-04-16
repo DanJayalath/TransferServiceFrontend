@@ -1,46 +1,48 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const LoginForm = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Hardcoded user data for validation
-  const hardcodedUsers = [
-    { username: 'user', password: '123', role: 'user' },
-    { username: 'admin', password: '123', role: 'admin' },
-  ];
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    const user = hardcodedUsers.find(
-      (u) => u.username === username && u.password === password
-    );
+    try {
+      const response = await axios.get('https://localhost:7299/api/Users');
+      const users = response.data;
 
-    if (user) {
-      console.log('Login successful:', user);
-      if (user.role === 'admin') {
-        navigate('/dashboard'); // Navigate to dashboard for admin
+      const user = users.find(
+        (u) => u.email.toLowerCase() === email.toLowerCase() && u.passwordHash === password
+      );
+
+      if (user) {
+        localStorage.setItem('userEmail', user.email);
+        console.log('Login successful:', user);
+        if (user.name.toLowerCase() === 'admin') {
+          navigate('/dashboard');
+        } else {
+          navigate('/userProfile');
+        }
       } else {
-        navigate('/userProfile'); // Navigate to userProfile for regular user
+        setError('Invalid email or password');
       }
-    } else {
-      setError('Invalid username or password');
+    } catch (err) {
+      setError('Error connecting to the server. Please try again later.');
+      console.error('Login error:', err);
     }
   };
 
   return (
     <div className="min-h-screen flex items-start justify-center bg-gray-100 pt-16">
-      {/* Background shapes */}
       <div className="absolute top-5 left-5 w-32 h-32 bg-blue-200 rounded-full opacity-50"></div>
       <div className="absolute bottom-10 right-10 w-40 h-40 bg-blue-300 rounded-full opacity-50"></div>
       <div className="absolute top-10 right-10 w-16 h-16 bg-purple-200 rounded-full opacity-50"></div>
 
-      {/* Login Card */}
       <div className="relative bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
         <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
           Welcome!{' '}
@@ -49,7 +51,6 @@ const LoginForm = () => {
           </span>
         </h1>
 
-        {/* Error Message */}
         {error && (
           <div className="mb-4 text-red-500 text-center">
             {error}
@@ -58,16 +59,16 @@ const LoginForm = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="username" className="block text-gray-600 text-sm font-medium mb-2">
-              Username
+            <label htmlFor="email" className="block text-gray-600 text-sm font-medium mb-2">
+              Email
             </label>
             <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter your username"
+              placeholder="Enter your email"
               required
             />
           </div>

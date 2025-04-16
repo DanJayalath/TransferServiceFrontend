@@ -22,7 +22,7 @@ export default function ThreadMain({ thread, addMessageToThread }) {
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
-    addMessageToThread(thread.id, newMessage);
+    addMessageToThread(thread.threadId, newMessage);
     setNewMessage("");
   };
 
@@ -34,55 +34,27 @@ export default function ThreadMain({ thread, addMessageToThread }) {
           <div>
             <div className="flex items-center space-x-2">
               <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-white font-bold">
-                {thread.customer.name.charAt(0)}
+                {thread.messages[0]?.userEmail?.charAt(0).toUpperCase() || "?"}
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-800">{thread.customer.name}</h2>
-                <p className="text-sm text-gray-500">{thread.customer.email}</p>
+                <h2 className="text-lg font-semibold text-gray-800">{thread.messages[0]?.userEmail}</h2>
+                <p className="text-sm text-gray-500">Booking: {thread.bookingNumber}</p>
               </div>
             </div>
           </div>
           <div className="flex items-center space-x-2">
             <p className="text-sm text-gray-500">
-              {thread.date} | {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              {new Date(thread.messages[0]?.timestamp).toLocaleDateString("en-US", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
             </p>
-            <div className="flex space-x-2">
-              <button className="p-1 rounded-full hover:bg-gray-100">
-                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-              <button className="p-1 rounded-full hover:bg-gray-100">
-                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
-              <button className="p-1 rounded-full hover:bg-gray-100">
-                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </div>
           </div>
         </div>
 
         {/* Thread Topic */}
-        <h3 className="text-xl font-bold text-gray-800 mb-4">{thread.topic}</h3>
+        <h3 className="text-xl font-bold text-gray-800 mb-4">{thread.subject}</h3>
       </div>
 
       {/* Messages Area */}
@@ -96,8 +68,16 @@ export default function ThreadMain({ thread, addMessageToThread }) {
                     message.sender === "Admin" ? "bg-blue-100 text-blue-900" : "bg-gray-100 text-gray-900"
                   }`}
                 >
-                  <p className="text-base whitespace-pre-line">{message.text}</p>
-                  <p className="text-sm text-gray-500 mt-1">{message.timestamp}</p>
+                  <p className="text-base whitespace-pre-line">{message.body}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {new Date(message.timestamp).toLocaleString("en-US", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
                 </div>
               </div>
               {index < thread.messages.length - 1 && <hr className="my-4 border-gray-200" />}
@@ -112,14 +92,14 @@ export default function ThreadMain({ thread, addMessageToThread }) {
         <div className="flex space-x-2">
           <textarea
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => setNewMessage(e.target.value.slice(0, 1000))}
             className="flex-1 p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
             placeholder="Type your reply..."
             rows="2"
           />
           <button
             onClick={handleSendMessage}
-            className={`px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 ${
+            className={`px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 ${
               !newMessage.trim() ? "opacity-50 cursor-not-allowed" : ""
             }`}
             disabled={!newMessage.trim()}
