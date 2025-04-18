@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-// Country list with phone codes (simplified for brevity, add more as needed)
+// Country list
 const countries = [
   { name: 'United States', code: '+1' },
   { name: 'United Kingdom', code: '+44' },
@@ -18,6 +18,7 @@ const Reservation = () => {
   const LOCATIONS_API_URL = "https://localhost:7299/api/Locations";
   const VEHICLES_API_URL = "https://localhost:7299/api/Vehicles";
   const BOOKINGS_API_URL = "https://localhost:7299/api/Bookings";
+  const RUNWAYS_API_URL = "https://localhost:7299/api/Runways";
 
   const [bookingDetails, setBookingDetails] = useState({
     tripType: location.state?.bookingDetails.tripType || '',
@@ -48,14 +49,56 @@ const Reservation = () => {
 
   const [locationData, setLocationData] = useState([]);
   const [vehicleData, setVehicleData] = useState([]);
+  const [runwayData, setRunwayData] = useState([]);
   const [error, setError] = useState('');
   const [selectedCar, setSelectedCar] = useState(null);
   const [showSummary, setShowSummary] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
-  const [bookingNumber, setBookingNumber] = useState(''); // New state for booking number
+  const [bookingNumber, setBookingNumber] = useState('');
   const [loading, setLoading] = useState(true);
+  const [paymentMethod, setPaymentMethod] = useState('driver');
+  const [cardDetails, setCardDetails] = useState({
+    cardNumber: '',
+    expiry: '',
+    cvv: '',
+  });
+  const [showWarningPopup, setShowWarningPopup] = useState(false);
 
-  // Fetch locations and vehicles from APIs
+  // Function to calculate and update vehicle prices
+  const calculateVehiclePrices = () => {
+    setVehicleData(prevVehicleData =>
+      prevVehicleData.map(vehicle => {
+        let totalPrice = vehicle.vehiclePrice || 0;
+
+        if (
+          runwayData.length > 0 &&
+          bookingDetails.pickupLocation &&
+          bookingDetails.dropOffLocation &&
+          bookingDetails.passengers
+        ) {
+          const matchingRunway = runwayData.find(
+            runway =>
+              runway.fromLocation.name === bookingDetails.pickupLocation &&
+              runway.toLocation.name === bookingDetails.dropOffLocation
+          );
+
+          if (matchingRunway) {
+            const passengerCount = parseInt(bookingDetails.passengers);
+            const priceKey = `pax${passengerCount}Price`;
+            const runwayPrice = matchingRunway[priceKey] || 0;
+            totalPrice += runwayPrice;
+          }
+        }
+
+        return {
+          ...vehicle,
+          newPrice: `${totalPrice.toFixed(2)} EUR`,
+        };
+      })
+    );
+  };
+
+  // Fetch data and run price calculation on load
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -98,7 +141,8 @@ const Reservation = () => {
             : 'https://media.istockphoto.com/id/1150931120/photo/3d-illustration-of-generic-compact-white-car-front-side-view.webp?a=1&b=1&s=612x612&w=0&k=20&c=xDkyTkz3TF6Wzgr5kADQSZ7dawgt-3iemOoFycHAPiE=',
           maxPassengers: vehicle.maxPassengers,
           maxLuggage: vehicle.maxLuggage,
-          newPrice: `${vehicle.price} EUR`,
+          vehiclePrice: vehicle.price,
+          newPrice: '0.00 EUR',
         }));
 
         setVehicleData(mappedVehicles);
@@ -107,14 +151,33 @@ const Reservation = () => {
       }
     };
 
+    const fetchRunways = async () => {
+      try {
+        const response = await fetch(RUNWAYS_API_URL);
+        if (!response.ok) throw new Error("Failed to fetch runways");
+        const rawData = await response.json();
+        setRunwayData(rawData);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([fetchLocations(), fetchVehicles()]);
+      await Promise.all([fetchLocations(), fetchVehicles(), fetchRunways()]);
       setLoading(false);
+      calculateVehiclePrices();
     };
 
     fetchData();
   }, []);
+
+  // Recalculate prices when booking details change
+  useEffect(() => {
+    if (vehicleData.length > 0) {
+      calculateVehiclePrices();
+    }
+  }, [runwayData, bookingDetails.pickupLocation, bookingDetails.dropOffLocation, bookingDetails.passengers, vehicleData]);
 
   const handleBookingDetailsChange = (e) => {
     const { id, value } = e.target;
@@ -142,6 +205,14 @@ const Reservation = () => {
     }
   };
 
+  const handleCardDetailsChange = (e) => {
+    const { id, value } = e.target;
+    setCardDetails((prevData) => ({
+      ...prevData,
+      [id]: value,
+    }));
+  };
+
   const isPersonalDetailsComplete = () => {
     return (
       personalDetails.name.trim() !== '' &&
@@ -151,9 +222,17 @@ const Reservation = () => {
     );
   };
 
+  const isCardDetailsComplete = () => {
+    return (
+      cardDetails.cardNumber.trim() !== '' &&
+      cardDetails.expiry.trim() !== '' &&
+      cardDetails.cvv.trim() !== ''
+    );
+  };
+
   const handleCarSelect = (car) => {
     if (!isPersonalDetailsComplete()) {
-      setError('Please fill in your personal details to select a car!');
+      setShowWarningPopup(true);
       return;
     }
     setError('');
@@ -161,10 +240,19 @@ const Reservation = () => {
     setShowSummary(true);
   };
 
+  const handleCloseWarningPopup = () => {
+    setShowWarningPopup(false);
+  };
+
   const handlePersonalDetailsSubmit = async (e) => {
     e.preventDefault();
     if (personalDetails.password !== personalDetails.confirmPassword) {
       setError('Passwords do not match');
+      return;
+    }
+
+    if (paymentMethod === 'online' && !isCardDetailsComplete()) {
+      setError('Please fill in all card details to proceed with online payment');
       return;
     }
 
@@ -191,6 +279,7 @@ const Reservation = () => {
       password: personalDetails.password,
       vehicleCategory: selectedCar.title,
       totalPrice: selectedCar.newPrice,
+      paymentMethod: paymentMethod,
     };
 
     try {
@@ -207,7 +296,7 @@ const Reservation = () => {
       }
 
       const result = await response.json();
-      setBookingNumber(result.bookingNumber); // Store the booking number
+      setBookingNumber(result.bookingNumber);
       setError('');
       setBookingConfirmed(true);
     } catch (err) {
@@ -411,8 +500,7 @@ const Reservation = () => {
                         <p className="text-xs text-gray-500">Includes VAT & fees</p>
                         <button
                           onClick={() => handleCarSelect(car)}
-                          disabled={!isPersonalDetailsComplete()}
-                          className={`mt-3 bg-gradient-to-r ${isPersonalDetailsComplete() ? 'from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700' : 'from-gray-400 to-gray-500 cursor-not-allowed'} text-white px-6 py-2 rounded-full transition-all duration-300 shadow-md ${isPersonalDetailsComplete() ? 'hover:shadow-lg' : ''}`}
+                          className="mt-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-6 py-2 rounded-full hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 shadow-md hover:shadow-lg"
                         >
                           Select
                         </button>
@@ -565,6 +653,82 @@ const Reservation = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Payment Options */}
+                  <div className="bg-gray-50 p-6 rounded-lg shadow-inner">
+                    <h4 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-yellow-500 pb-2 inline-block">Payment Options</h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-4">
+                        <input
+                          type="radio"
+                          id="payDriver"
+                          name="paymentMethod"
+                          value="driver"
+                          checked={paymentMethod === 'driver'}
+                          onChange={() => setPaymentMethod('driver')}
+                          className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300"
+                        />
+                        <label htmlFor="payDriver" className="text-gray-700 font-medium">Pay at the Driver</label>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <input
+                          type="radio"
+                          id="payOnline"
+                          name="paymentMethod"
+                          value="online"
+                          checked={paymentMethod === 'online'}
+                          onChange={() => setPaymentMethod('online')}
+                          className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300"
+                        />
+                        <label htmlFor="payOnline" className="text-gray-700 font-medium">Pay Online</label>
+                      </div>
+                      {paymentMethod === 'online' && (
+                        <div className="mt-4 bg-white p-4 rounded-lg shadow-md">
+                          <h5 className="text-lg font-semibold text-gray-800 mb-3">Online Checkout</h5>
+                          <div className="space-y-4">
+                            <div>
+                              <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+                              <input
+                                type="text"
+                                id="cardNumber"
+                                value={cardDetails.cardNumber}
+                                onChange={handleCardDetailsChange}
+                                placeholder="1234 5678 9012 3456"
+                                className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200"
+                                required
+                              />
+                            </div>
+                            <div className="flex space-x-4">
+                              <div className="w-1/2">
+                                <label htmlFor="expiry" className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+                                <input
+                                  type="text"
+                                  id="expiry"
+                                  value={cardDetails.expiry}
+                                  onChange={handleCardDetailsChange}
+                                  placeholder="MM/YY"
+                                  className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200"
+                                  required
+                                />
+                              </div>
+                              <div className="w-1/2">
+                                <label htmlFor="cvv" className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                                <input
+                                  type="text"
+                                  id="cvv"
+                                  value={cardDetails.cvv}
+                                  onChange={handleCardDetailsChange}
+                                  placeholder="123"
+                                  className="w-full p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200"
+                                  required
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 {error && <p className="mt-4 text-red-600 text-sm font-medium bg-red-50 p-2 rounded-lg">{error}</p>}
                 <div className="mt-8 flex justify-between items-center">
@@ -583,7 +747,7 @@ const Reservation = () => {
                       onClick={handlePersonalDetailsSubmit}
                       className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-8 py-3 rounded-full hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                     >
-                      Confirm Booking
+                      {paymentMethod === 'online' ? 'Pay' : 'Confirm Booking'}
                     </button>
                   </div>
                 </div>
@@ -661,6 +825,24 @@ const Reservation = () => {
               </div>
             )}
           </div>
+
+          {/* Warning Pop-up */}
+          {showWarningPopup && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Warning</h3>
+                <p className="text-gray-700 mb-6">Please fill the Personal details before selecting a vehicle</p>
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleCloseWarningPopup}
+                    className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-6 py-2 rounded-full hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 shadow-md hover:shadow-lg"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         // Booking Confirmation Section
@@ -669,7 +851,7 @@ const Reservation = () => {
             <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Paris Luxury Transfers</h1>
             <h2 className="text-2xl font-semibold text-gray-800 mt-2 border-b-2 border-yellow-500 pb-2 inline-block">Booking Confirmation</h2>
             <p className="text-sm text-gray-600 mt-1">Reservation Confirmed on {new Date().toLocaleDateString()}</p>
-            <p className="text-lg font-medium text-gray-800 mt-2">Booking Number: {bookingNumber}</p> {/* Display booking number */}
+            <p className="text-lg font-medium text-gray-800 mt-2">Booking Number: {bookingNumber}</p>
           </div>
 
           <div className="space-y-8">
@@ -738,7 +920,10 @@ const Reservation = () => {
 
           <div className="mt-8 flex justify-between items-center">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => {
+                console.log('Back to Home clicked');
+                navigate('/');
+              }}
               className="bg-gradient-to-r from-gray-700 to-gray-900 text-white px-6 py-2 rounded-full hover:from-gray-800 hover:to-black transition-all duration-300 shadow-md hover:shadow-lg"
             >
               Back to Home
